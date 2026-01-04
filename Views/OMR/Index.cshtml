@@ -1,0 +1,170 @@
+@model OMRAutoFillApp.Models.ViewModels.OMRFillViewModel
+
+@{
+    ViewData["Title"] = "OMR Auto-Fill System";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="bi bi-pencil-square"></i> OMR Auto-Fill System</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="FillOMR" method="post" id="omrForm">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Select a template and fill in the required information to generate a filled OMR sheet.
+                        </div>
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <div asp-validation-summary="All" class="text-danger"></div>
+                            </div>
+                        }
+
+                        <!-- Template Selection -->
+                        <div class="mb-3">
+                            <label asp-for="TemplateId" class="form-label fw-bold">
+                                <i class="bi bi-file-earmark-text"></i> Select Template *
+                            </label>
+                            <select asp-for="TemplateId" class="form-select" id="templateSelect" required>
+                                <option value="">-- Select Template --</option>
+                                @if (ViewBag.Templates != null)
+                                {
+                                    var templates = (System.Collections.Generic.List<OMRAutoFillApp.Models.TemplateMetadata>)ViewBag.Templates;
+                                    var mcqTemplates = templates.Where(t => t.TemplateType == "MCQ").ToList();
+                                    var saqTemplates = templates.Where(t => t.TemplateType == "SAQ").ToList();
+                                    
+                                    @if (mcqTemplates.Any())
+                                    {
+                                        <optgroup label="MCQ Templates">
+                                            @foreach (var template in mcqTemplates)
+                                            {
+                                                <option value="@template.TemplateId">@template.TemplateName</option>
+                                            }
+                                        </optgroup>
+                                    }
+                                    @if (saqTemplates.Any())
+                                    {
+                                        <optgroup label="SAQ Templates">
+                                            @foreach (var template in saqTemplates)
+                                            {
+                                                <option value="@template.TemplateId">@template.TemplateName</option>
+                                            }
+                                        </optgroup>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="TemplateId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Template Info Display -->
+                        <div id="templateInfo" class="alert alert-light d-none mb-3">
+                            <h6 class="fw-bold">Template Information:</h6>
+                            <div id="templateDetails"></div>
+                        </div>
+
+                        <!-- Roll Number -->
+                        <div class="mb-3">
+                            <label asp-for="RollNumber" class="form-label fw-bold">
+                                <i class="bi bi-123"></i> Roll Number *
+                            </label>
+                            <input asp-for="RollNumber" class="form-control" placeholder="Enter roll number (digits only)" id="rollNumber" required />
+                            <span asp-validation-for="RollNumber" class="text-danger"></span>
+                            <div class="form-text" id="rollHelp"></div>
+                        </div>
+
+                        <!-- Registration Number -->
+                        <div class="mb-3">
+                            <label asp-for="RegistrationNumber" class="form-label fw-bold">
+                                <i class="bi bi-card-text"></i> Registration Number *
+                            </label>
+                            <input asp-for="RegistrationNumber" class="form-control" placeholder="Enter registration number (digits only)" id="regNumber" required />
+                            <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
+                            <div class="form-text" id="regHelp"></div>
+                        </div>
+
+                        <!-- MCQ Answers (only for MCQ templates) -->
+                        <div class="mb-3 d-none" id="mcqAnswersSection">
+                            <label asp-for="McqAnswers" class="form-label fw-bold">
+                                <i class="bi bi-list-check"></i> MCQ Answers *
+                            </label>
+                            <textarea asp-for="McqAnswers" class="form-control" rows="3" placeholder="Enter answers separated by commas (e.g., A,B,C,D,A,B...)" id="mcqAnswers"></textarea>
+                            <span asp-validation-for="McqAnswers" class="text-danger"></span>
+                            <div class="form-text" id="mcqHelp"></div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-download"></i> Generate & Download Filled OMR
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="card mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-question-circle"></i> Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li>Select an OMR template (MCQ or SAQ) from the dropdown</li>
+                        <li>Enter the roll number (must match the required digit count for the template)</li>
+                        <li>Enter the registration number (must match the required digit count for the template)</li>
+                        <li>For MCQ templates, enter the answers separated by commas (e.g., A,B,C,D,A,B...)</li>
+                        <li>Click "Generate & Download Filled OMR" to download your filled OMR sheet</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('templateSelect').addEventListener('change', function() {
+            const templateId = this.value;
+            if (!templateId) {
+                document.getElementById('templateInfo').classList.add('d-none');
+                document.getElementById('mcqAnswersSection').classList.add('d-none');
+                return;
+            }
+
+            fetch(`/OMR/GetTemplateInfo?templateId=${templateId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Display template info
+                    const infoDiv = document.getElementById('templateInfo');
+                    const detailsDiv = document.getElementById('templateDetails');
+                    
+                    let details = `<strong>Type:</strong> ${data.templateType}<br>`;
+                    details += `<strong>Roll Number Digits:</strong> ${data.rollDigits}<br>`;
+                    details += `<strong>Registration Number Digits:</strong> ${data.regDigits}<br>`;
+                    
+                    if (data.templateType === 'MCQ') {
+                        details += `<strong>MCQ Questions:</strong> ${data.mcqCount}<br>`;
+                        details += `<strong>Valid Options:</strong> ${data.options.join(', ')}`;
+                        document.getElementById('mcqAnswersSection').classList.remove('d-none');
+                        document.getElementById('mcqHelp').innerText = `Enter ${data.mcqCount} answers separated by commas. Valid options: ${data.options.join(', ')}`;
+                    } else {
+                        document.getElementById('mcqAnswersSection').classList.add('d-none');
+                    }
+                    
+                    detailsDiv.innerHTML = details;
+                    infoDiv.classList.remove('d-none');
+
+                    // Update help text
+                    document.getElementById('rollHelp').innerText = `Must be exactly ${data.rollDigits} digits`;
+                    document.getElementById('regHelp').innerText = `Must be exactly ${data.regDigits} digits`;
+                })
+                .catch(error => {
+                    console.error('Error fetching template info:', error);
+                });
+        });
+    </script>
+}
