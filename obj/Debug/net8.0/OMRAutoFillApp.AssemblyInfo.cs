@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OMRAutoFillApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4225738cd328f40b32dad710d0f7a5f30fe793a6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7f0cb86d9b71ecc311d6ab07028bc284b62dbd55")]
 [assembly: System.Reflection.AssemblyProductAttribute("OMRAutoFillApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OMRAutoFillApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
