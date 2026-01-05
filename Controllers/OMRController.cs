@@ -8,19 +8,15 @@ namespace OMRAutoFillApp.Controllers
 {
     public class OMRController : Controller
     {
-        private readonly ITemplateLoaderService _templateLoader;
         private readonly IOMRFillEngineService _omrFillEngine;
 
-        public OMRController(ITemplateLoaderService templateLoader, IOMRFillEngineService omrFillEngine)
+        public OMRController(IOMRFillEngineService omrFillEngine)
         {
-            _templateLoader = templateLoader;
             _omrFillEngine = omrFillEngine;
         }
 
         public IActionResult Index()
         {
-            var templates = _templateLoader.GetAllTemplates();
-            ViewBag.Templates = templates;
             return View(new OMRFillViewModel());
         }
 
@@ -29,13 +25,24 @@ namespace OMRAutoFillApp.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var templates = _templateLoader.GetAllTemplates();
-                ViewBag.Templates = templates;
                 return View("Index", model);
             }
 
             try
             {
+                // Validate uploaded files
+                if (model.TemplateImage == null || model.TemplateImage.Length == 0)
+                {
+                    ModelState.AddModelError("", "Please upload a valid template image");
+                    return View("Index", model);
+                }
+
+                if (model.TemplateConfiguration == null || model.TemplateConfiguration.Length == 0)
+                {
+                    ModelState.AddModelError("", "Please upload a valid template configuration");
+                    return View("Index", model);
+                }
+
                 // Parse MCQ answers if provided
                 string[]? mcqAnswers = null;
                 if (!string.IsNullOrWhiteSpace(model.McqAnswers))
@@ -46,9 +53,13 @@ namespace OMRAutoFillApp.Controllers
                         .ToArray();
                 }
 
-                // Generate filled OMR
+                // Generate filled OMR using uploaded files
+                using var imageStream = model.TemplateImage.OpenReadStream();
+                using var configStream = model.TemplateConfiguration.OpenReadStream();
+
                 var filledOMR = _omrFillEngine.FillOMR(
-                    model.TemplateId,
+                    imageStream,
+                    configStream,
                     model.RollNumber,
                     model.RegistrationNumber,
                     mcqAnswers
@@ -60,31 +71,8 @@ namespace OMRAutoFillApp.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Error generating OMR: {ex.Message}");
-                var templates = _templateLoader.GetAllTemplates();
-                ViewBag.Templates = templates;
                 return View("Index", model);
             }
-        }
-
-        [HttpGet]
-        public IActionResult GetTemplateInfo(string templateId)
-        {
-            var metadata = _templateLoader.GetTemplateMetadata(templateId);
-            if (metadata == null)
-                return NotFound();
-
-            var config = _templateLoader.LoadTemplateConfiguration(templateId);
-            if (config == null)
-                return NotFound();
-
-            return Json(new
-            {
-                templateType = config.TemplateType,
-                rollDigits = config.Roll?.Digits ?? 0,
-                regDigits = config.Reg?.Digits ?? 0,
-                mcqCount = config.Mcq?.QuestionCount ?? 0,
-                options = config.Mcq?.Options ?? new System.Collections.Generic.List<string>()
-            });
         }
     }
 }

@@ -4,9 +4,10 @@
 
 OMR Auto-Fill is a web application that automatically fills Optical Mark Recognition (OMR) answer sheets. Instead of manually filling bubbles with a pen or pencil, you can:
 
-1. Select a template (exam format)
-2. Enter your information (roll number, registration number, answers)
-3. Download a pre-filled OMR sheet ready for submission
+1. Upload your OMR template image
+2. Upload the template configuration (JSON file with bubble coordinates)
+3. Enter your information (roll number, registration number, answers)
+4. Download a pre-filled OMR sheet ready for submission
 
 ## How to Use
 
@@ -14,62 +15,103 @@ OMR Auto-Fill is a web application that automatically fills Optical Mark Recogni
 
 Open your web browser and navigate to the application URL (provided by your administrator or instructor).
 
-### Step 2: Select a Template
+### Step 2: Prepare Your Template Files
 
-From the **Select Template** dropdown, choose the appropriate template for your exam:
-- **MCQ Templates**: For multiple-choice question exams
-- **SAQ Templates**: For short answer/written exams
+Before using the application, you need two files:
 
-The application will display template information including:
-- Template type (MCQ or SAQ)
-- Required roll number digits
-- Required registration number digits
-- Number of MCQ questions (for MCQ templates)
-- Valid answer options (for MCQ templates)
+1. **Template Image**: Your blank OMR template (PNG or JPG format)
+2. **Configuration File**: A JSON file containing bubble coordinates for your template
 
-### Step 3: Enter Roll Number
+You can download sample templates and configurations from the [GitHub repository](https://github.com/MehediRumon/OMR-Auto-Fill-Web-Application/tree/main/Templates).
+
+### Step 3: Upload Template Image
+
+Click on **Upload OMR Template Image** and select your blank OMR template image file:
+- Accepted formats: PNG, JPG, JPEG
+- This is the blank template that will be filled with your information
+
+### Step 4: Upload Template Configuration
+
+Click on **Upload Template Configuration** and select your JSON configuration file:
+- File format: JSON (.json)
+- Contains bubble coordinates and template specifications
+- See configuration format in the instructions section
+
+### Step 5: Enter Roll Number
 
 In the **Roll Number** field, enter your roll number:
 - Must be numeric (digits only)
-- Must match the exact number of digits required by the template
-- Example: If template requires 6 digits, enter `123456`
+- Must match the digit count specified in your configuration file
+- Example: If configuration requires 6 digits, enter `123456`
 
-### Step 4: Enter Registration Number
+### Step 6: Enter Registration Number
 
 In the **Registration Number** field, enter your registration number:
 - Must be numeric (digits only)
-- Must match the exact number of digits required by the template
-- Example: If template requires 8 digits, enter `98765432`
+- Must match the digit count specified in your configuration file
+- Example: If configuration requires 8 digits, enter `98765432`
 
-### Step 5: Enter MCQ Answers (MCQ Templates Only)
+### Step 7: Enter MCQ Answers (Optional)
 
-If you selected an MCQ template, you'll see an **MCQ Answers** field:
+If you're using an MCQ template, enter your answers in the **MCQ Answers** field:
 - Enter your answers separated by commas
-- Use only the valid options shown (e.g., A, B, C, D)
+- Use only the valid options specified in your configuration (e.g., A, B, C, D)
 - Must provide answers for all questions
 - Example: `A,B,C,D,A,B,C,D,A,B`
 
-**Note**: SAQ templates don't require MCQ answers as they're for written responses.
+**Note**: Leave this field blank for SAQ (written answer) templates.
 
-### Step 6: Generate and Download
+### Step 8: Generate and Download
 
 Click the **Generate & Download Filled OMR** button.
 
-Your browser will automatically download a PNG image file named like `OMR_123456_20260104120000.png` with all the bubbles filled according to your input.
+Your browser will automatically download a PNG image file named like `OMR_123456_20260105120000.png` with all the bubbles filled according to your input.
 
-### Step 7: Print and Submit
+### Step 9: Print and Submit
 
 - Open the downloaded image file
 - Print it on standard A4 or Letter size paper
 - Review to ensure all bubbles are filled correctly
 - Submit to your exam center or instructor
 
+## Configuration File Format
+
+Your JSON configuration file should follow this format:
+
+```json
+{
+  "templateId": "YOUR_TEMPLATE_ID",
+  "templateType": "MCQ",  // or "SAQ"
+  "dpi": 300,
+  "roll": {
+    "digits": 6,
+    "columns": [
+      {"0": [100,100], "1": [100,120], "2": [100,140], ...}
+    ]
+  },
+  "reg": {
+    "digits": 8,
+    "columns": [...]
+  },
+  "mcq": {  // For MCQ templates only
+    "questionCount": 10,
+    "options": ["A","B","C","D"],
+    "coordinates": {
+      "1": {"A": [120,520], "B": [145,520], ...}
+    }
+  }
+}
+```
+
+See the [Developer Guide](DEVELOPER_GUIDE.md) for detailed configuration instructions.
+
 ## Tips and Best Practices
 
 ### Before Generating
+- ✅ Prepare your template image and configuration file
 - ✅ Double-check your roll number and registration number
 - ✅ Verify all MCQ answers are correct
-- ✅ Ensure you've selected the correct template
+- ✅ Ensure your configuration matches your template
 - ✅ Make sure your answer count matches the question count
 
 ### After Downloading

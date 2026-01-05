@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using OMRAutoFillApp.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
@@ -11,34 +12,25 @@ namespace OMRAutoFillApp.Services
 {
     public interface IOMRFillEngineService
     {
-        byte[] FillOMR(string templateId, string rollNumber, string registrationNumber, string[]? mcqAnswers = null);
+        byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null);
     }
 
     public class OMRFillEngineService : IOMRFillEngineService
     {
-        private readonly ITemplateLoaderService _templateLoader;
         private const int BubbleRadius = 6; // 5-7 px as per spec
 
-        public OMRFillEngineService(ITemplateLoaderService templateLoader)
+        public byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null)
         {
-            _templateLoader = templateLoader;
-        }
-
-        public byte[] FillOMR(string templateId, string rollNumber, string registrationNumber, string[]? mcqAnswers = null)
-        {
-            var metadata = _templateLoader.GetTemplateMetadata(templateId);
-            if (metadata == null)
-                throw new ArgumentException($"Template {templateId} not found");
-
-            var config = _templateLoader.LoadTemplateConfiguration(templateId);
+            // Load configuration from uploaded JSON
+            var config = LoadConfiguration(configurationStream);
             if (config == null)
-                throw new ArgumentException($"Configuration for template {templateId} not found");
+                throw new ArgumentException("Invalid template configuration");
 
             // Validate inputs
             ValidateInputs(config, rollNumber, registrationNumber, mcqAnswers);
 
-            // Load the base image
-            using var image = Image.Load(metadata.BaseImagePath);
+            // Load the uploaded template image
+            using var image = Image.Load(templateImageStream);
 
             // Fill roll number
             FillRollNumber(image, config, rollNumber);
@@ -56,6 +48,23 @@ namespace OMRAutoFillApp.Services
             using var ms = new MemoryStream();
             image.SaveAsPng(ms);
             return ms.ToArray();
+        }
+
+        private TemplateConfiguration? LoadConfiguration(Stream configStream)
+        {
+            try
+            {
+                using var reader = new StreamReader(configStream);
+                var json = reader.ReadToEnd();
+                return JsonSerializer.Deserialize<TemplateConfiguration>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private void ValidateInputs(TemplateConfiguration config, string rollNumber, string registrationNumber, string[]? mcqAnswers)

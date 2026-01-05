@@ -2,7 +2,7 @@
 
 ## Overview
 
-This ASP.NET Core MVC application automatically fills OMR (Optical Mark Recognition) answer sheets by overlaying filled bubbles based on user input. The system is template-driven, supporting both MCQ (Multiple Choice Questions) and SAQ (Short Answer Questions) templates without requiring code changes for new templates.
+This ASP.NET Core MVC application automatically fills OMR (Optical Mark Recognition) answer sheets by overlaying filled bubbles based on user input. The system uses a **user-upload model** where users upload their own template images and configurations, providing maximum flexibility without requiring pre-configured templates.
 
 ## Project Structure
 
@@ -13,35 +13,36 @@ OMRAutoFillApp/
 │   └── OMRController.cs            # Main controller for OMR operations
 ├── Models/
 │   ├── TemplateConfiguration.cs    # Template configuration models
-│   ├── TemplateMetadata.cs         # Template metadata
+│   ├── TemplateMetadata.cs         # Template metadata (legacy)
 │   └── ViewModels/
-│       └── OMRFillViewModel.cs     # View model for form input
+│       └── OMRFillViewModel.cs     # View model for file uploads and form input
 ├── Services/
-│   ├── TemplateLoaderService.cs    # Loads and caches templates
+│   ├── TemplateLoaderService.cs    # Legacy template loader (no longer used)
 │   └── OMRFillEngineService.cs     # Generic OMR fill engine
-├── Templates/
-│   ├── MCQ/                        # MCQ template files
-│   │   ├── *.json                  # Template configurations
-│   │   └── *.png                   # Blank template images
-│   └── SAQ/                        # SAQ template files
-│       ├── *.json                  # Template configurations
-│       └── *.png                   # Blank template images
+├── Templates/                      # Sample templates for reference
+│   ├── MCQ/                        
+│   │   ├── *.json                  # Sample configurations
+│   │   └── *.png                   # Sample blank template images
+│   └── SAQ/                        
+│       ├── *.json                  # Sample configurations
+│       └── *.png                   # Sample blank template images
 ├── Views/
 │   └── OMR/
-│       └── Index.cshtml            # Main OMR page
+│       └── Index.cshtml            # Upload interface with file inputs
 └── wwwroot/                        # Static files (CSS, JS, libraries)
 ```
 
 ## Key Features
 
-### Template-Driven Architecture
-- All OMR behavior is controlled by JSON configuration files
-- No code changes required for new templates
-- Supports unlimited MCQ and SAQ templates
+### Upload-Based Architecture
+- Users upload their own OMR template images (PNG/JPG)
+- Users upload JSON configuration files with bubble coordinates
+- No server-side template storage or pre-configuration needed
+- Complete flexibility for any template format
 
 ### OMR Fill Engine
-- Generic engine works with any template configuration
-- Draws filled circles at predefined coordinates
+- Generic engine works with uploaded templates
+- Draws filled circles at coordinates specified in configuration
 - Supports:
   - Roll number auto-fill
   - Registration number auto-fill
@@ -70,13 +71,31 @@ dotnet run
 
 The application will be available at `http://localhost:5000` (or the port specified in launchSettings.json).
 
-## Adding New Templates
+## Using the Application
 
-### Step 1: Create Template Configuration JSON
+### For End Users
 
-Create a JSON file in the appropriate directory:
-- MCQ templates: `Templates/MCQ/your_template_name.json`
-- SAQ templates: `Templates/SAQ/your_template_name.json`
+Users no longer need to select pre-configured templates. Instead, they:
+
+1. **Prepare template files:**
+   - Create or obtain a blank OMR template image (PNG/JPG)
+   - Create a JSON configuration file with bubble coordinates
+
+2. **Upload files:**
+   - Upload the template image through the web interface
+   - Upload the configuration JSON file
+
+3. **Fill information:**
+   - Enter roll number and registration number
+   - Enter MCQ answers (if applicable)
+
+4. **Generate OMR:**
+   - Click the generate button
+   - Download the filled OMR sheet
+
+### Creating Template Configurations
+
+To create a new template configuration, follow this format:
 
 #### MCQ Template Example:
 ```json
@@ -150,15 +169,9 @@ Create a JSON file in the appropriate directory:
 }
 ```
 
-### Step 2: Add Blank Template Image
+### Determining Coordinates
 
-Create or place a blank OMR template image in the same directory with the same name:
-- For `Templates/MCQ/my_template.json`, add `Templates/MCQ/my_template.png` (or .jpg)
-- For `Templates/SAQ/my_template.json`, add `Templates/SAQ/my_template.png` (or .jpg)
-
-### Step 3: Determine Coordinates
-
-To find the coordinates for bubbles:
+To find the coordinates for bubbles in your template:
 
 1. **Manual Method**: Open the template image in an image editor (like GIMP, Photoshop, or Paint.NET) and note the X, Y coordinates of bubble centers.
 
@@ -171,13 +184,13 @@ To find the coordinates for bubbles:
    - Use consistent spacing for easier configuration
    - Test with a sample OMR to verify accuracy
 
-### Step 4: Test Your Template
+### Testing Your Template
 
-1. Restart the application (the template loader caches templates on startup)
-2. Select your new template from the dropdown
-3. Fill in the required fields
+1. Open the application in your browser
+2. Upload your template image and configuration file
+3. Fill in test values for roll number, registration, and answers
 4. Generate and download a test OMR
-5. Verify that all bubbles are filled correctly
+5. Verify that all bubbles are filled correctly at the right positions
 
 ## Configuration Details
 

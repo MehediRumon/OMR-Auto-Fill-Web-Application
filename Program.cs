@@ -4,7 +4,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<ITemplateLoaderService, TemplateLoaderService>();
 builder.Services.AddScoped<IOMRFillEngineService, OMRFillEngineService>();
 
 var app = builder.Build();

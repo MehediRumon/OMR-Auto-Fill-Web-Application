@@ -1,11 +1,15 @@
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace OMRAutoFillApp.Models.ViewModels
 {
     public class OMRFillViewModel
     {
-        [Required(ErrorMessage = "Please select a template")]
-        public string TemplateId { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Please upload an OMR template")]
+        public IFormFile? TemplateImage { get; set; }
+
+        [Required(ErrorMessage = "Please upload template configuration")]
+        public IFormFile? TemplateConfiguration { get; set; }
 
         [Required(ErrorMessage = "Roll number is required")]
         [RegularExpression(@"^\d+$", ErrorMessage = "Roll number must contain only digits")]
