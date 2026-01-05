@@ -230,14 +230,14 @@ namespace OMRAutoFillApp.Services
             }
             
             // Validate grid dimensions
-            if (gridX <= 0 || gridY <= 0)
+            if (gridX <= 1 || gridY <= 1)
             {
-                throw new ArgumentException($"Invalid grid dimensions: gridX={gridX}, gridY={gridY}. Must be positive values.");
+                throw new ArgumentException($"Invalid grid dimensions: gridX={gridX}, gridY={gridY}. Must be greater than 1 to form a grid.");
             }
             
-            // Calculate grid cell size using effective dimensions
-            double cellWidth = effectiveWidth / gridX;
-            double cellHeight = effectiveHeight / gridY;
+            // Calculate grid cell size using effective dimensions (grid coordinates are inclusive, 0..gridX/gridY)
+            double cellWidth = effectiveWidth / (gridX - 1);
+            double cellHeight = effectiveHeight / (gridY - 1);
             
             for (int col = 0; col < numberOfColumns; col++)
             {
