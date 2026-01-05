@@ -214,6 +214,12 @@ namespace OMRAutoFillApp.Services
                 double topPercent = borderRemove.Top / 100.0;
                 double bottomPercent = borderRemove.Bottom / 100.0;
                 
+                // Validate border percentages don't exceed reasonable limits
+                if (leftPercent + rightPercent >= 0.95 || topPercent + bottomPercent >= 0.95)
+                {
+                    throw new ArgumentException("Border removal percentages are too large (would leave less than 5% of image).");
+                }
+                
                 // Calculate offset (where the effective area starts)
                 offsetX = actualImageWidth * leftPercent;
                 offsetY = actualImageHeight * topPercent;
@@ -221,6 +227,12 @@ namespace OMRAutoFillApp.Services
                 // Calculate effective dimensions (area after border removal)
                 effectiveWidth = actualImageWidth * (1 - leftPercent - rightPercent);
                 effectiveHeight = actualImageHeight * (1 - topPercent - bottomPercent);
+            }
+            
+            // Validate grid dimensions
+            if (gridX <= 0 || gridY <= 0)
+            {
+                throw new ArgumentException($"Invalid grid dimensions: gridX={gridX}, gridY={gridY}. Must be positive values.");
             }
             
             // Calculate grid cell size using effective dimensions
