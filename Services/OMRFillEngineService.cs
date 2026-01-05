@@ -59,35 +59,52 @@ namespace OMRAutoFillApp.Services
             {
                 configStream.Position = 0; // Reset stream position to beginning
                 
-                // First, peek at the XML to check for common issues
+                // First, peek at the XML to determine format
                 var xmlContent = ReadStreamContent(configStream);
-                ValidateXmlFormat(xmlContent);
+                var rootElementName = GetRootElementName(xmlContent);
                 
-                // Reset stream and deserialize
+                // Reset stream and deserialize based on format
                 configStream.Position = 0;
-                var serializer = new XmlSerializer(typeof(TemplateConfiguration));
-                var config = serializer.Deserialize(configStream) as TemplateConfiguration;
+                TemplateConfiguration config;
+                
+                if (rootElementName == "Page")
+                {
+                    // Legacy format - deserialize and convert
+                    var legacySerializer = new XmlSerializer(typeof(LegacyOMRConfiguration));
+                    var legacyConfig = legacySerializer.Deserialize(configStream) as LegacyOMRConfiguration;
+                    
+                    if (legacyConfig == null)
+                    {
+                        throw new InvalidOperationException("Failed to deserialize legacy XML configuration.");
+                    }
+                    
+                    // Convert legacy format to current format
+                    config = LegacyOMRConverter.ConvertToTemplateConfiguration(legacyConfig);
+                }
+                else if (rootElementName == "TemplateConfiguration")
+                {
+                    // Current format - deserialize directly
+                    var serializer = new XmlSerializer(typeof(TemplateConfiguration));
+                    var deserializedConfig = serializer.Deserialize(configStream) as TemplateConfiguration;
+                    
+                    if (deserializedConfig == null)
+                    {
+                        throw new InvalidOperationException("XML deserialization returned null. The root element must be '<TemplateConfiguration>'.");
+                    }
+                    
+                    config = deserializedConfig;
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Unsupported XML format: The root element is '<{rootElementName}>'. " +
+                        "This application supports '<TemplateConfiguration>' (current format) or '<Page>' (legacy format). " +
+                        "Please refer to Templates/XML_FORMAT_REFERENCE.md for the correct format."
+                    );
+                }
                 
                 // Validate that essential fields are populated
-                if (config == null)
-                {
-                    throw new InvalidOperationException("XML deserialization returned null. The root element must be '<TemplateConfiguration>'.");
-                }
-                
-                if (string.IsNullOrEmpty(config.TemplateId))
-                {
-                    throw new InvalidOperationException("TemplateId is missing in configuration. Please add a <TemplateId> element.");
-                }
-                
-                if (config.Roll == null || config.Roll.Columns == null || config.Roll.Columns.Count == 0)
-                {
-                    throw new InvalidOperationException("Roll configuration is missing or invalid. Please add a <Roll> section with <Columns>.");
-                }
-                
-                if (config.Reg == null || config.Reg.Columns == null || config.Reg.Columns.Count == 0)
-                {
-                    throw new InvalidOperationException("Registration configuration is missing or invalid. Please add a <Reg> section with <Columns>.");
-                }
+                ValidateConfiguration(config);
                 
                 return config;
             }
@@ -99,7 +116,25 @@ namespace OMRAutoFillApp.Services
             catch (Exception ex)
             {
                 // Provide more detailed error message for other exceptions
-                throw new ArgumentException($"Failed to load template configuration: {ex.Message}. Please ensure your XML file follows the correct format. Refer to Templates/XML_FORMAT_REFERENCE.md for examples.", ex);
+                throw new ArgumentException($"Failed to load template configuration: {ex.Message}. Please ensure your XML file follows a supported format.", ex);
+            }
+        }
+        
+        private void ValidateConfiguration(TemplateConfiguration config)
+        {
+            if (string.IsNullOrEmpty(config.TemplateId))
+            {
+                throw new InvalidOperationException("TemplateId is missing in configuration.");
+            }
+            
+            if (config.Roll == null || config.Roll.Columns == null || config.Roll.Columns.Count == 0)
+            {
+                throw new InvalidOperationException("Roll configuration is missing or invalid.");
+            }
+            
+            if (config.Reg == null || config.Reg.Columns == null || config.Reg.Columns.Count == 0)
+            {
+                throw new InvalidOperationException("Registration configuration is missing or invalid.");
             }
         }
 
@@ -109,7 +144,7 @@ namespace OMRAutoFillApp.Services
             return reader.ReadToEnd();
         }
 
-        private void ValidateXmlFormat(string xmlContent)
+        private string GetRootElementName(string xmlContent)
         {
             // Check if XML is empty or too short
             if (string.IsNullOrWhiteSpace(xmlContent) || xmlContent.Length < MinimumXmlContentLength)
@@ -128,35 +163,16 @@ namespace OMRAutoFillApp.Services
                     throw new InvalidOperationException("The XML file has no root element.");
                 }
 
-                var rootElementName = doc.DocumentElement.Name;
-                
-                // Check for common incorrect root elements
-                if (rootElementName == "Page")
-                {
-                    throw new InvalidOperationException(
-                        "Invalid XML format: The root element is '<Page>' but this application expects '<TemplateConfiguration>'. " +
-                        "You appear to be using a configuration file from a different OMR system. " +
-                        "Please convert your configuration to the format specified in Templates/XML_FORMAT_REFERENCE.md."
-                    );
-                }
-                
-                if (rootElementName != "TemplateConfiguration")
-                {
-                    throw new InvalidOperationException(
-                        $"Invalid XML format: The root element is '<{rootElementName}>' but must be '<TemplateConfiguration>'. " +
-                        "Please refer to Templates/XML_FORMAT_REFERENCE.md for the correct format."
-                    );
-                }
-
                 // Check for XML namespaces (common issue)
                 if (doc.DocumentElement.NamespaceURI != string.Empty)
                 {
                     throw new InvalidOperationException(
                         "Invalid XML format: The XML file contains namespaces (xmlns attributes). " +
-                        "Please remove all xmlns attributes from your XML file. " +
-                        "The root element should be: <TemplateConfiguration> (without any xmlns attributes)."
+                        "Please remove all xmlns attributes from your XML file."
                     );
                 }
+                
+                return doc.DocumentElement.Name;
             }
             catch (XmlException ex)
             {
