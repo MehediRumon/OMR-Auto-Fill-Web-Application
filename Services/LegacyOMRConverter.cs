@@ -11,6 +11,10 @@ namespace OMRAutoFillApp.Services
     public class LegacyOMRConverter
     {
         private const int DefaultDpi = 300;
+        private const int StandardPageWidth = 2480;  // Standard A4 width at 300 DPI
+        private const int StandardPageHeight = 3508; // Standard A4 height at 300 DPI
+        private const string RollNumberMemberName = "rollNo";
+        private const string RegistrationNumberMemberName = "registrationNo";
         
         /// <summary>
         /// Converts a legacy OMR configuration to the current template configuration format.
@@ -75,7 +79,7 @@ namespace OMRAutoFillApp.Services
         private static RollConfiguration? ConvertRollConfiguration(LegacyOMR omr, LegacyDesign design)
         {
             var rollRegion = omr.Regions.FirstOrDefault(r => 
-                r.MemberName?.Equals("rollNo", StringComparison.OrdinalIgnoreCase) == true);
+                r.MemberName?.Equals(RollNumberMemberName, StringComparison.OrdinalIgnoreCase) == true);
             
             if (rollRegion == null)
             {
@@ -111,7 +115,7 @@ namespace OMRAutoFillApp.Services
         private static RegistrationConfiguration? ConvertRegistrationConfiguration(LegacyOMR omr, LegacyDesign design)
         {
             var regRegion = omr.Regions.FirstOrDefault(r => 
-                r.MemberName?.Equals("registrationNo", StringComparison.OrdinalIgnoreCase) == true);
+                r.MemberName?.Equals(RegistrationNumberMemberName, StringComparison.OrdinalIgnoreCase) == true);
             
             if (regRegion == null)
             {
@@ -156,13 +160,9 @@ namespace OMRAutoFillApp.Services
         {
             var columns = new List<DigitCoordinate>();
             
-            // Calculate grid cell size (approximate)
-            // Assuming standard A4 size at 300 DPI: ~2480 x 3508 pixels
-            const int standardWidth = 2480;
-            const int standardHeight = 3508;
-            
-            double cellWidth = (double)standardWidth / gridX;
-            double cellHeight = (double)standardHeight / gridY;
+            // Calculate grid cell size using standard A4 dimensions at 300 DPI
+            double cellWidth = (double)StandardPageWidth / gridX;
+            double cellHeight = (double)StandardPageHeight / gridY;
             
             for (int col = 0; col < numberOfColumns; col++)
             {
