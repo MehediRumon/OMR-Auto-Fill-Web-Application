@@ -1,0 +1,155 @@
+@model OMRAutoFillApp.Models.ViewModels.OMRFillViewModel
+
+@{
+    ViewData["Title"] = "OMR Auto-Fill System";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="bi bi-pencil-square"></i> OMR Auto-Fill System</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="FillOMR" method="post" enctype="multipart/form-data" id="omrForm">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Upload your OMR template and configuration, then fill in the required information to generate a filled OMR sheet.
+                        </div>
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <div asp-validation-summary="All" class="text-danger"></div>
+                            </div>
+                        }
+
+                        <!-- Template Image Upload -->
+                        <div class="mb-3">
+                            <label asp-for="TemplateImage" class="form-label fw-bold">
+                                <i class="bi bi-file-earmark-image"></i> Upload OMR Template Image *
+                            </label>
+                            <input asp-for="TemplateImage" type="file" class="form-control" accept=".png,.jpg,.jpeg" required />
+                            <span asp-validation-for="TemplateImage" class="text-danger"></span>
+                            <div class="form-text">Upload your blank OMR template (PNG or JPG format)</div>
+                        </div>
+
+                        <!-- Template Configuration Upload -->
+                        <div class="mb-3">
+                            <label asp-for="TemplateConfiguration" class="form-label fw-bold">
+                                <i class="bi bi-file-earmark-code"></i> Upload Template Configuration *
+                            </label>
+                            <input asp-for="TemplateConfiguration" type="file" class="form-control" accept=".xml" required />
+                            <span asp-validation-for="TemplateConfiguration" class="text-danger"></span>
+                            <div class="form-text">Upload the XML configuration file with bubble coordinates</div>
+                        </div>
+
+                        <!-- Roll Number -->
+                        <div class="mb-3">
+                            <label asp-for="RollNumber" class="form-label fw-bold">
+                                <i class="bi bi-123"></i> Roll Number *
+                            </label>
+                            <input asp-for="RollNumber" class="form-control" placeholder="Enter roll number (digits only)" required />
+                            <span asp-validation-for="RollNumber" class="text-danger"></span>
+                            <div class="form-text">Enter your roll number (digits only, as per template configuration)</div>
+                        </div>
+
+                        <!-- Registration Number -->
+                        <div class="mb-3">
+                            <label asp-for="RegistrationNumber" class="form-label fw-bold">
+                                <i class="bi bi-card-text"></i> Registration Number *
+                            </label>
+                            <input asp-for="RegistrationNumber" class="form-control" placeholder="Enter registration number (digits only)" required />
+                            <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
+                            <div class="form-text">Enter your registration number (digits only, as per template configuration)</div>
+                        </div>
+
+                        <!-- MCQ Answers -->
+                        <div class="mb-3">
+                            <label asp-for="McqAnswers" class="form-label fw-bold">
+                                <i class="bi bi-list-check"></i> MCQ Answers (Optional)
+                            </label>
+                            <textarea asp-for="McqAnswers" class="form-control" rows="3" placeholder="Enter answers separated by commas (e.g., A,B,C,D,A,B...)"></textarea>
+                            <span asp-validation-for="McqAnswers" class="text-danger"></span>
+                            <div class="form-text">For MCQ templates only. Leave blank for SAQ templates.</div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-download"></i> Generate & Download Filled OMR
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="card mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-question-circle"></i> Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li><strong>Prepare Your Template:</strong> Have your blank OMR template image ready (PNG or JPG format)</li>
+                        <li><strong>Prepare Configuration:</strong> Create an XML configuration file with bubble coordinates for your template (see format below)</li>
+                        <li><strong>Upload Files:</strong> Upload both the template image and configuration file</li>
+                        <li><strong>Enter Information:</strong> Fill in your roll number and registration number</li>
+                        <li><strong>Enter MCQ Answers:</strong> For MCQ templates, enter your answers separated by commas (e.g., A,B,C,D...)</li>
+                        <li><strong>Generate OMR:</strong> Click "Generate & Download Filled OMR" to create your filled sheet</li>
+                    </ol>
+
+                    <h6 class="mt-3">Configuration File Format (XML):</h6>
+                    <pre class="bg-light p-3 rounded"><code>&lt;TemplateConfiguration&gt;
+  &lt;TemplateId&gt;YOUR_TEMPLATE_ID&lt;/TemplateId&gt;
+  &lt;TemplateType&gt;MCQ&lt;/TemplateType&gt;
+  &lt;Dpi&gt;300&lt;/Dpi&gt;
+  &lt;Roll&gt;
+    &lt;Digits&gt;6&lt;/Digits&gt;
+    &lt;Columns&gt;
+      &lt;Column&gt;
+        &lt;Positions&gt;
+          &lt;Position digit="0" x="100" y="100" /&gt;
+          &lt;Position digit="1" x="100" y="120" /&gt;
+          ...
+        &lt;/Positions&gt;
+      &lt;/Column&gt;
+    &lt;/Columns&gt;
+  &lt;/Roll&gt;
+  &lt;Reg&gt;
+    &lt;Digits&gt;8&lt;/Digits&gt;
+    &lt;Columns&gt;...&lt;/Columns&gt;
+  &lt;/Reg&gt;
+  &lt;Mcq&gt;
+    &lt;QuestionCount&gt;10&lt;/QuestionCount&gt;
+    &lt;Options&gt;
+      &lt;Option&gt;A&lt;/Option&gt;
+      &lt;Option&gt;B&lt;/Option&gt;
+      &lt;Option&gt;C&lt;/Option&gt;
+      &lt;Option&gt;D&lt;/Option&gt;
+    &lt;/Options&gt;
+    &lt;Coordinates&gt;
+      &lt;Question number="1"&gt;
+        &lt;OptionPositions&gt;
+          &lt;Position option="A" x="120" y="520" /&gt;
+          &lt;Position option="B" x="145" y="520" /&gt;
+          ...
+        &lt;/OptionPositions&gt;
+      &lt;/Question&gt;
+    &lt;/Coordinates&gt;
+  &lt;/Mcq&gt;
+&lt;/TemplateConfiguration&gt;</code></pre>
+                    <p class="mt-2">
+                        <a href="https://github.com/MehediRumon/OMR-Auto-Fill-Web-Application/tree/main/Templates" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-github"></i> View Sample Templates & Configurations
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
