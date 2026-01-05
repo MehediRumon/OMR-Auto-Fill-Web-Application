@@ -21,6 +21,8 @@ namespace OMRAutoFillApp.Services
     public class OMRFillEngineService : IOMRFillEngineService
     {
         private const int BubbleRadius = 6; // 5-7 px as per spec
+        private const int StreamReaderBufferSize = 1024;
+        private const int MinimumXmlContentLength = 10;
 
         public byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null)
         {
@@ -103,14 +105,14 @@ namespace OMRAutoFillApp.Services
 
         private string ReadStreamContent(Stream stream)
         {
-            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true);
+            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: StreamReaderBufferSize, leaveOpen: true);
             return reader.ReadToEnd();
         }
 
         private void ValidateXmlFormat(string xmlContent)
         {
             // Check if XML is empty or too short
-            if (string.IsNullOrWhiteSpace(xmlContent) || xmlContent.Length < 10)
+            if (string.IsNullOrWhiteSpace(xmlContent) || xmlContent.Length < MinimumXmlContentLength)
             {
                 throw new InvalidOperationException("The XML file appears to be empty or invalid.");
             }
