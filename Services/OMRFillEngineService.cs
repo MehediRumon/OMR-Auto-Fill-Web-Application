@@ -20,7 +20,7 @@ namespace OMRAutoFillApp.Services
 
     public class OMRFillEngineService : IOMRFillEngineService
     {
-        private const int BubbleRadius = 10; // Bubble radius in pixels for filling
+        private const int BubbleRadius = 15; // Larger bubble radius to ensure full coverage of printed circles
         private const int StreamReaderBufferSize = 1024;
         private const int MinimumXmlContentLength = 50; // Minimum characters for a valid XML document
 

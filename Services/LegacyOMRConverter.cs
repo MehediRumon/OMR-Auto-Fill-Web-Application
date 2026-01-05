@@ -215,13 +215,13 @@ namespace OMRAutoFillApp.Services
                     if (direction.Equals("y", StringComparison.OrdinalIgnoreCase))
                     {
                         // Vertical direction: digits go down, columns go right
-                        // Calculate position: (startPos + columnOffset + padding) * cellSize + centerOffset
+                        // startCircle already points to bubble center, startPadding is fractional offset
                         double gridPosX = startX + col * spacingX + startPaddingX;
                         double gridPosY = startY + digit * spacingY + startPaddingY;
                         
-                        // Convert to pixel position and add half cell size to center the bubble
-                        x = (int)(gridPosX * cellWidth + cellWidth / 2);
-                        y = (int)(gridPosY * cellHeight + cellHeight / 2);
+                        // Convert to pixel position - startCircle coordinates already represent centers
+                        x = (int)(gridPosX * cellWidth);
+                        y = (int)(gridPosY * cellHeight);
                     }
                     else
                     {
@@ -229,9 +229,9 @@ namespace OMRAutoFillApp.Services
                         double gridPosX = startX + digit * spacingX + startPaddingX;
                         double gridPosY = startY + col * spacingY + startPaddingY;
                         
-                        // Convert to pixel position and add half cell size to center the bubble
-                        x = (int)(gridPosX * cellWidth + cellWidth / 2);
-                        y = (int)(gridPosY * cellHeight + cellHeight / 2);
+                        // Convert to pixel position - startCircle coordinates already represent centers
+                        x = (int)(gridPosX * cellWidth);
+                        y = (int)(gridPosY * cellHeight);
                     }
                     
                     column.Positions.Add(new CoordinatePosition
