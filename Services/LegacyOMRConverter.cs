@@ -87,7 +87,7 @@ namespace OMRAutoFillApp.Services
             
             // Check if there are imageParts (SAQ answer images)
             var hasImageParts = legacyConfig.Design?.OMRs
-                .SelectMany(omr => omr.ImageParts)
+                ?.SelectMany(omr => omr.ImageParts ?? Enumerable.Empty<LegacyImagePart>())
                 .Any() ?? false;
             
             if (hasImageParts)
@@ -95,8 +95,8 @@ namespace OMRAutoFillApp.Services
                 return "SAQ";
             }
             
-            // If no MCQ-specific indicators, default to SAQ (safer for legacy templates)
-            // Legacy templates with only roll/reg numbers are typically SAQ templates
+            // Legacy templates typically only contain roll/registration fields and are SAQ templates
+            // Default to SAQ as it's safer (doesn't require MCQ answers)
             return "SAQ";
         }
         
