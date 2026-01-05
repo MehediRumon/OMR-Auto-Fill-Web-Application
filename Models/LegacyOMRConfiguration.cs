@@ -102,6 +102,9 @@ namespace OMRAutoFillApp.Models
         
         [XmlElement("spacing")]
         public LegacySpacing? Spacing { get; set; }
+        
+        [XmlElement("borderRemovePercent")]
+        public LegacyBorderRemovePercent? BorderRemovePercent { get; set; }
     }
     
     public class LegacyImagePart
@@ -138,5 +141,23 @@ namespace OMRAutoFillApp.Models
         
         [XmlAttribute("y")]
         public double Y { get; set; }
+    }
+    
+    public class LegacyBorderRemovePercent
+    {
+        [XmlAttribute("useBR")]
+        public string UseBR { get; set; } = string.Empty;
+        
+        [XmlAttribute("top")]
+        public double Top { get; set; }
+        
+        [XmlAttribute("left")]
+        public double Left { get; set; }
+        
+        [XmlAttribute("bottom")]
+        public double Bottom { get; set; }
+        
+        [XmlAttribute("right")]
+        public double Right { get; set; }
     }
 }

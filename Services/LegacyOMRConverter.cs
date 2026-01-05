@@ -128,6 +128,7 @@ namespace OMRAutoFillApp.Services
                     rollRegion.Spacing?.X ?? 0.5,
                     rollRegion.Spacing?.Y ?? 0.5,
                     rollRegion.Direction,
+                    rollRegion.BorderRemovePercent,
                     design.GridX,
                     design.GridY,
                     imageWidth,
@@ -168,6 +169,7 @@ namespace OMRAutoFillApp.Services
                     regRegion.Spacing?.X ?? 0.5,
                     regRegion.Spacing?.Y ?? 0.5,
                     regRegion.Direction,
+                    regRegion.BorderRemovePercent,
                     design.GridX,
                     design.GridY,
                     imageWidth,
@@ -189,6 +191,7 @@ namespace OMRAutoFillApp.Services
             double spacingX,
             double spacingY,
             string direction,
+            LegacyBorderRemovePercent? borderRemove,
             int gridX,
             int gridY,
             int actualImageWidth,
@@ -196,9 +199,33 @@ namespace OMRAutoFillApp.Services
         {
             var columns = new List<DigitCoordinate>();
             
-            // Calculate grid cell size using actual image dimensions
-            double cellWidth = (double)actualImageWidth / gridX;
-            double cellHeight = (double)actualImageHeight / gridY;
+            // Calculate effective dimensions after border removal
+            double effectiveWidth = actualImageWidth;
+            double effectiveHeight = actualImageHeight;
+            double offsetX = 0;
+            double offsetY = 0;
+            
+            // If borderRemovePercent is specified and useBR is true, adjust dimensions
+            if (borderRemove != null && borderRemove.UseBR.Equals("true", StringComparison.OrdinalIgnoreCase))
+            {
+                // Border removal percentages
+                double leftPercent = borderRemove.Left / 100.0;
+                double rightPercent = borderRemove.Right / 100.0;
+                double topPercent = borderRemove.Top / 100.0;
+                double bottomPercent = borderRemove.Bottom / 100.0;
+                
+                // Calculate offset (where the effective area starts)
+                offsetX = actualImageWidth * leftPercent;
+                offsetY = actualImageHeight * topPercent;
+                
+                // Calculate effective dimensions (area after border removal)
+                effectiveWidth = actualImageWidth * (1 - leftPercent - rightPercent);
+                effectiveHeight = actualImageHeight * (1 - topPercent - bottomPercent);
+            }
+            
+            // Calculate grid cell size using effective dimensions
+            double cellWidth = effectiveWidth / gridX;
+            double cellHeight = effectiveHeight / gridY;
             
             for (int col = 0; col < numberOfColumns; col++)
             {
@@ -219,9 +246,9 @@ namespace OMRAutoFillApp.Services
                         double gridPosX = startX + col * spacingX + startPaddingX;
                         double gridPosY = startY + digit * spacingY + startPaddingY;
                         
-                        // Convert to pixel position - startCircle coordinates already represent centers
-                        x = (int)(gridPosX * cellWidth);
-                        y = (int)(gridPosY * cellHeight);
+                        // Convert to pixel position and add border offset
+                        x = (int)(gridPosX * cellWidth + offsetX);
+                        y = (int)(gridPosY * cellHeight + offsetY);
                     }
                     else
                     {
@@ -229,9 +256,9 @@ namespace OMRAutoFillApp.Services
                         double gridPosX = startX + digit * spacingX + startPaddingX;
                         double gridPosY = startY + col * spacingY + startPaddingY;
                         
-                        // Convert to pixel position - startCircle coordinates already represent centers
-                        x = (int)(gridPosX * cellWidth);
-                        y = (int)(gridPosY * cellHeight);
+                        // Convert to pixel position and add border offset
+                        x = (int)(gridPosX * cellWidth + offsetX);
+                        y = (int)(gridPosY * cellHeight + offsetY);
                     }
                     
                     column.Positions.Add(new CoordinatePosition
