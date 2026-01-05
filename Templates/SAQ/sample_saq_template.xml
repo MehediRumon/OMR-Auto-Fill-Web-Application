@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TemplateConfiguration>
+  <TemplateId>SAQ_SAMPLE_01</TemplateId>
+  <TemplateType>SAQ</TemplateType>
+  <Dpi>300</Dpi>
+  <Roll>
+    <Digits>6</Digits>
+    <Columns>
+      <Column>
+        <Positions>
+          <Position digit="0" x="100" y="100" />
+          <Position digit="1" x="100" y="120" />
+          <Position digit="2" x="100" y="140" />
+          <Position digit="3" x="100" y="160" />
+          <Position digit="4" x="100" y="180" />
+          <Position digit="5" x="100" y="200" />
+          <Position digit="6" x="100" y="220" />
+          <Position digit="7" x="100" y="240" />
+          <Position digit="8" x="100" y="260" />
+          <Position digit="9" x="100" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="130" y="100" />
+          <Position digit="1" x="130" y="120" />
+          <Position digit="2" x="130" y="140" />
+          <Position digit="3" x="130" y="160" />
+          <Position digit="4" x="130" y="180" />
+          <Position digit="5" x="130" y="200" />
+          <Position digit="6" x="130" y="220" />
+          <Position digit="7" x="130" y="240" />
+          <Position digit="8" x="130" y="260" />
+          <Position digit="9" x="130" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="160" y="100" />
+          <Position digit="1" x="160" y="120" />
+          <Position digit="2" x="160" y="140" />
+          <Position digit="3" x="160" y="160" />
+          <Position digit="4" x="160" y="180" />
+          <Position digit="5" x="160" y="200" />
+          <Position digit="6" x="160" y="220" />
+          <Position digit="7" x="160" y="240" />
+          <Position digit="8" x="160" y="260" />
+          <Position digit="9" x="160" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="190" y="100" />
+          <Position digit="1" x="190" y="120" />
+          <Position digit="2" x="190" y="140" />
+          <Position digit="3" x="190" y="160" />
+          <Position digit="4" x="190" y="180" />
+          <Position digit="5" x="190" y="200" />
+          <Position digit="6" x="190" y="220" />
+          <Position digit="7" x="190" y="240" />
+          <Position digit="8" x="190" y="260" />
+          <Position digit="9" x="190" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="220" y="100" />
+          <Position digit="1" x="220" y="120" />
+          <Position digit="2" x="220" y="140" />
+          <Position digit="3" x="220" y="160" />
+          <Position digit="4" x="220" y="180" />
+          <Position digit="5" x="220" y="200" />
+          <Position digit="6" x="220" y="220" />
+          <Position digit="7" x="220" y="240" />
+          <Position digit="8" x="220" y="260" />
+          <Position digit="9" x="220" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="250" y="100" />
+          <Position digit="1" x="250" y="120" />
+          <Position digit="2" x="250" y="140" />
+          <Position digit="3" x="250" y="160" />
+          <Position digit="4" x="250" y="180" />
+          <Position digit="5" x="250" y="200" />
+          <Position digit="6" x="250" y="220" />
+          <Position digit="7" x="250" y="240" />
+          <Position digit="8" x="250" y="260" />
+          <Position digit="9" x="250" y="280" />
+        </Positions>
+      </Column>
+    </Columns>
+  </Roll>
+  <Reg>
+    <Digits>8</Digits>
+    <Columns>
+      <Column>
+        <Positions>
+          <Position digit="0" x="320" y="100" />
+          <Position digit="1" x="320" y="120" />
+          <Position digit="2" x="320" y="140" />
+          <Position digit="3" x="320" y="160" />
+          <Position digit="4" x="320" y="180" />
+          <Position digit="5" x="320" y="200" />
+          <Position digit="6" x="320" y="220" />
+          <Position digit="7" x="320" y="240" />
+          <Position digit="8" x="320" y="260" />
+          <Position digit="9" x="320" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="350" y="100" />
+          <Position digit="1" x="350" y="120" />
+          <Position digit="2" x="350" y="140" />
+          <Position digit="3" x="350" y="160" />
+          <Position digit="4" x="350" y="180" />
+          <Position digit="5" x="350" y="200" />
+          <Position digit="6" x="350" y="220" />
+          <Position digit="7" x="350" y="240" />
+          <Position digit="8" x="350" y="260" />
+          <Position digit="9" x="350" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="380" y="100" />
+          <Position digit="1" x="380" y="120" />
+          <Position digit="2" x="380" y="140" />
+          <Position digit="3" x="380" y="160" />
+          <Position digit="4" x="380" y="180" />
+          <Position digit="5" x="380" y="200" />
+          <Position digit="6" x="380" y="220" />
+          <Position digit="7" x="380" y="240" />
+          <Position digit="8" x="380" y="260" />
+          <Position digit="9" x="380" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="410" y="100" />
+          <Position digit="1" x="410" y="120" />
+          <Position digit="2" x="410" y="140" />
+          <Position digit="3" x="410" y="160" />
+          <Position digit="4" x="410" y="180" />
+          <Position digit="5" x="410" y="200" />
+          <Position digit="6" x="410" y="220" />
+          <Position digit="7" x="410" y="240" />
+          <Position digit="8" x="410" y="260" />
+          <Position digit="9" x="410" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="440" y="100" />
+          <Position digit="1" x="440" y="120" />
+          <Position digit="2" x="440" y="140" />
+          <Position digit="3" x="440" y="160" />
+          <Position digit="4" x="440" y="180" />
+          <Position digit="5" x="440" y="200" />
+          <Position digit="6" x="440" y="220" />
+          <Position digit="7" x="440" y="240" />
+          <Position digit="8" x="440" y="260" />
+          <Position digit="9" x="440" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="470" y="100" />
+          <Position digit="1" x="470" y="120" />
+          <Position digit="2" x="470" y="140" />
+          <Position digit="3" x="470" y="160" />
+          <Position digit="4" x="470" y="180" />
+          <Position digit="5" x="470" y="200" />
+          <Position digit="6" x="470" y="220" />
+          <Position digit="7" x="470" y="240" />
+          <Position digit="8" x="470" y="260" />
+          <Position digit="9" x="470" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="500" y="100" />
+          <Position digit="1" x="500" y="120" />
+          <Position digit="2" x="500" y="140" />
+          <Position digit="3" x="500" y="160" />
+          <Position digit="4" x="500" y="180" />
+          <Position digit="5" x="500" y="200" />
+          <Position digit="6" x="500" y="220" />
+          <Position digit="7" x="500" y="240" />
+          <Position digit="8" x="500" y="260" />
+          <Position digit="9" x="500" y="280" />
+        </Positions>
+      </Column>
+      <Column>
+        <Positions>
+          <Position digit="0" x="530" y="100" />
+          <Position digit="1" x="530" y="120" />
+          <Position digit="2" x="530" y="140" />
+          <Position digit="3" x="530" y="160" />
+          <Position digit="4" x="530" y="180" />
+          <Position digit="5" x="530" y="200" />
+          <Position digit="6" x="530" y="220" />
+          <Position digit="7" x="530" y="240" />
+          <Position digit="8" x="530" y="260" />
+          <Position digit="9" x="530" y="280" />
+        </Positions>
+      </Column>
+    </Columns>
+  </Reg>
+</TemplateConfiguration>
