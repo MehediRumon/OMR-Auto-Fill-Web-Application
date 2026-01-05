@@ -20,9 +20,10 @@ namespace OMRAutoFillApp.Services
 
     public class OMRFillEngineService : IOMRFillEngineService
     {
-        private const int BubbleRadius = 6; // 5-7 px as per spec
+        private const int DefaultBubbleRadius = 8; // Default bubble radius in pixels
         private const int StreamReaderBufferSize = 1024;
         private const int MinimumXmlContentLength = 50; // Minimum characters for a valid XML document
+        private const double BubbleSizeRatio = 0.35; // Bubble should be ~35% of cell size
 
         public byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null)
         {
@@ -278,9 +279,13 @@ namespace OMRAutoFillApp.Services
 
         private void DrawBubble(Image image, int x, int y)
         {
+            // Use a larger bubble radius (10 pixels) to better fill printed circles
+            // This can be adjusted based on template requirements
+            const int bubbleRadius = 10;
+            
             image.Mutate(ctx =>
             {
-                ctx.Fill(Color.Black, new EllipsePolygon(x, y, BubbleRadius));
+                ctx.Fill(Color.Black, new EllipsePolygon(x, y, bubbleRadius));
             });
         }
     }

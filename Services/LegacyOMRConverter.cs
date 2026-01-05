@@ -123,6 +123,8 @@ namespace OMRAutoFillApp.Services
                     rollRegion.Lines,
                     rollRegion.StartCircle.X,
                     rollRegion.StartCircle.Y,
+                    rollRegion.StartPadding?.X ?? 0.0,
+                    rollRegion.StartPadding?.Y ?? 0.0,
                     rollRegion.Spacing?.X ?? 0.5,
                     rollRegion.Spacing?.Y ?? 0.5,
                     rollRegion.Direction,
@@ -161,6 +163,8 @@ namespace OMRAutoFillApp.Services
                     regRegion.Lines,
                     regRegion.StartCircle.X,
                     regRegion.StartCircle.Y,
+                    regRegion.StartPadding?.X ?? 0.0,
+                    regRegion.StartPadding?.Y ?? 0.0,
                     regRegion.Spacing?.X ?? 0.5,
                     regRegion.Spacing?.Y ?? 0.5,
                     regRegion.Direction,
@@ -180,6 +184,8 @@ namespace OMRAutoFillApp.Services
             int numberOfColumns,
             int startX,
             int startY,
+            double startPaddingX,
+            double startPaddingY,
             double spacingX,
             double spacingY,
             string direction,
@@ -209,14 +215,23 @@ namespace OMRAutoFillApp.Services
                     if (direction.Equals("y", StringComparison.OrdinalIgnoreCase))
                     {
                         // Vertical direction: digits go down, columns go right
-                        x = (int)((startX + col * spacingX) * cellWidth);
-                        y = (int)((startY + digit * spacingY) * cellHeight);
+                        // Calculate position: (startPos + columnOffset + padding) * cellSize + centerOffset
+                        double gridPosX = startX + col * spacingX + startPaddingX;
+                        double gridPosY = startY + digit * spacingY + startPaddingY;
+                        
+                        // Convert to pixel position and add half cell size to center the bubble
+                        x = (int)(gridPosX * cellWidth + cellWidth / 2);
+                        y = (int)(gridPosY * cellHeight + cellHeight / 2);
                     }
                     else
                     {
                         // Horizontal direction: digits go right, columns go down
-                        x = (int)((startX + digit * spacingX) * cellWidth);
-                        y = (int)((startY + col * spacingY) * cellHeight);
+                        double gridPosX = startX + digit * spacingX + startPaddingX;
+                        double gridPosY = startY + col * spacingY + startPaddingY;
+                        
+                        // Convert to pixel position and add half cell size to center the bubble
+                        x = (int)(gridPosX * cellWidth + cellWidth / 2);
+                        y = (int)(gridPosY * cellHeight + cellHeight / 2);
                     }
                     
                     column.Positions.Add(new CoordinatePosition
