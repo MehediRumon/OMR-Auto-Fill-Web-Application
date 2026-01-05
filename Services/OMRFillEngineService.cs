@@ -22,7 +22,7 @@ namespace OMRAutoFillApp.Services
     {
         private const int BubbleRadius = 6; // 5-7 px as per spec
         private const int StreamReaderBufferSize = 1024;
-        private const int MinimumXmlContentLength = 10;
+        private const int MinimumXmlContentLength = 50; // Minimum characters for a valid XML document
 
         public byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null)
         {
