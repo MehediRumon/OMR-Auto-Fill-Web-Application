@@ -24,8 +24,6 @@ namespace OMRAutoFillApp.Services
         {
             // Load configuration from uploaded XML
             var config = LoadConfiguration(configurationStream);
-            if (config == null)
-                throw new ArgumentException("Invalid template configuration");
 
             // Validate inputs
             ValidateInputs(config, rollNumber, registrationNumber, mcqAnswers);
@@ -51,17 +49,41 @@ namespace OMRAutoFillApp.Services
             return ms.ToArray();
         }
 
-        private TemplateConfiguration? LoadConfiguration(Stream configStream)
+        private TemplateConfiguration LoadConfiguration(Stream configStream)
         {
             try
             {
+                configStream.Position = 0; // Reset stream position to beginning
                 var serializer = new XmlSerializer(typeof(TemplateConfiguration));
                 var config = serializer.Deserialize(configStream) as TemplateConfiguration;
+                
+                // Validate that essential fields are populated
+                if (config == null)
+                {
+                    throw new InvalidOperationException("XML deserialization returned null");
+                }
+                
+                if (string.IsNullOrEmpty(config.TemplateId))
+                {
+                    throw new InvalidOperationException("TemplateId is missing in configuration");
+                }
+                
+                if (config.Roll == null || config.Roll.Columns == null || config.Roll.Columns.Count == 0)
+                {
+                    throw new InvalidOperationException("Roll configuration is missing or invalid");
+                }
+                
+                if (config.Reg == null || config.Reg.Columns == null || config.Reg.Columns.Count == 0)
+                {
+                    throw new InvalidOperationException("Registration configuration is missing or invalid");
+                }
+                
                 return config;
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                // Provide more detailed error message
+                throw new ArgumentException($"Failed to load template configuration: {ex.Message}. Please ensure your XML file follows the correct format.", ex);
             }
         }
 

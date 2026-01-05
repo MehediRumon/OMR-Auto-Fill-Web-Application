@@ -6,6 +6,8 @@ namespace OMRAutoFillApp.Models
     [XmlRoot("TemplateConfiguration")]
     public class TemplateConfiguration
     {
+        public TemplateConfiguration() { }
+        
         [XmlElement("TemplateId")]
         public string TemplateId { get; set; } = string.Empty;
         
@@ -27,6 +29,8 @@ namespace OMRAutoFillApp.Models
 
     public class RollConfiguration
     {
+        public RollConfiguration() { }
+        
         [XmlElement("Digits")]
         public int Digits { get; set; }
         
@@ -37,6 +41,8 @@ namespace OMRAutoFillApp.Models
 
     public class RegistrationConfiguration
     {
+        public RegistrationConfiguration() { }
+        
         [XmlElement("Digits")]
         public int Digits { get; set; }
         
@@ -47,6 +53,8 @@ namespace OMRAutoFillApp.Models
 
     public class McqConfiguration
     {
+        public McqConfiguration() { }
+        
         [XmlElement("QuestionCount")]
         public int QuestionCount { get; set; }
         
@@ -61,6 +69,8 @@ namespace OMRAutoFillApp.Models
 
     public class DigitCoordinate
     {
+        public DigitCoordinate() { }
+        
         [XmlArray("Positions")]
         [XmlArrayItem("Position")]
         public List<CoordinatePosition> Positions { get; set; } = new List<CoordinatePosition>();
@@ -68,6 +78,8 @@ namespace OMRAutoFillApp.Models
 
     public class CoordinatePosition
     {
+        public CoordinatePosition() { }
+        
         [XmlAttribute("digit")]
         public string Digit { get; set; } = string.Empty;
         
@@ -80,6 +92,8 @@ namespace OMRAutoFillApp.Models
 
     public class QuestionCoordinate
     {
+        public QuestionCoordinate() { }
+        
         [XmlAttribute("number")]
         public string Number { get; set; } = string.Empty;
         
@@ -90,6 +104,8 @@ namespace OMRAutoFillApp.Models
 
     public class OptionPosition
     {
+        public OptionPosition() { }
+        
         [XmlAttribute("option")]
         public string Option { get; set; } = string.Empty;
         
