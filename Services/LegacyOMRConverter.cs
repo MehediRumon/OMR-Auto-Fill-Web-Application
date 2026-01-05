@@ -235,7 +235,7 @@ namespace OMRAutoFillApp.Services
                 throw new ArgumentException($"Invalid grid dimensions: gridX={gridX}, gridY={gridY}. Must be greater than 1 to form a grid.");
             }
             
-            // Calculate grid cell size using effective dimensions (grid coordinates are inclusive, 0..gridX/gridY)
+            // Calculate grid cell size using effective dimensions (grid coordinates are 0-based and inclusive: 0..gridX-1 / 0..gridY-1)
             double cellWidth = effectiveWidth / (gridX - 1);
             double cellHeight = effectiveHeight / (gridY - 1);
             
