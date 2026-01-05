@@ -5,7 +5,7 @@
 OMR Auto-Fill is a web application that automatically fills Optical Mark Recognition (OMR) answer sheets. Instead of manually filling bubbles with a pen or pencil, you can:
 
 1. Upload your OMR template image
-2. Upload the template configuration (JSON file with bubble coordinates)
+2. Upload the template configuration (XML file with bubble coordinates)
 3. Enter your information (roll number, registration number, answers)
 4. Download a pre-filled OMR sheet ready for submission
 
@@ -20,7 +20,7 @@ Open your web browser and navigate to the application URL (provided by your admi
 Before using the application, you need two files:
 
 1. **Template Image**: Your blank OMR template (PNG or JPG format)
-2. **Configuration File**: A JSON file containing bubble coordinates for your template
+2. **Configuration File**: An XML file containing bubble coordinates for your template
 
 You can download sample templates and configurations from the [GitHub repository](https://github.com/MehediRumon/OMR-Auto-Fill-Web-Application/tree/main/Templates).
 
@@ -32,8 +32,8 @@ Click on **Upload OMR Template Image** and select your blank OMR template image 
 
 ### Step 4: Upload Template Configuration
 
-Click on **Upload Template Configuration** and select your JSON configuration file:
-- File format: JSON (.json)
+Click on **Upload Template Configuration** and select your XML configuration file:
+- File format: XML (.xml)
 - Contains bubble coordinates and template specifications
 - See configuration format in the instructions section
 
@@ -76,31 +76,53 @@ Your browser will automatically download a PNG image file named like `OMR_123456
 
 ## Configuration File Format
 
-Your JSON configuration file should follow this format:
+Your XML configuration file should follow this format:
 
-```json
-{
-  "templateId": "YOUR_TEMPLATE_ID",
-  "templateType": "MCQ",  // or "SAQ"
-  "dpi": 300,
-  "roll": {
-    "digits": 6,
-    "columns": [
-      {"0": [100,100], "1": [100,120], "2": [100,140], ...}
-    ]
-  },
-  "reg": {
-    "digits": 8,
-    "columns": [...]
-  },
-  "mcq": {  // For MCQ templates only
-    "questionCount": 10,
-    "options": ["A","B","C","D"],
-    "coordinates": {
-      "1": {"A": [120,520], "B": [145,520], ...}
-    }
-  }
-}
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<TemplateConfiguration>
+  <TemplateId>YOUR_TEMPLATE_ID</TemplateId>
+  <TemplateType>MCQ</TemplateType>
+  <Dpi>300</Dpi>
+  <Roll>
+    <Digits>6</Digits>
+    <Columns>
+      <Column>
+        <Positions>
+          <Position digit="0" x="100" y="100" />
+          <Position digit="1" x="100" y="120" />
+          ...
+        </Positions>
+      </Column>
+      <!-- Repeat for each digit position -->
+    </Columns>
+  </Roll>
+  <Reg>
+    <Digits>8</Digits>
+    <Columns>
+      <!-- Similar structure to Roll -->
+    </Columns>
+  </Reg>
+  <Mcq>
+    <QuestionCount>10</QuestionCount>
+    <Options>
+      <Option>A</Option>
+      <Option>B</Option>
+      <Option>C</Option>
+      <Option>D</Option>
+    </Options>
+    <Coordinates>
+      <Question number="1">
+        <OptionPositions>
+          <Position option="A" x="120" y="520" />
+          <Position option="B" x="145" y="520" />
+          ...
+        </OptionPositions>
+      </Question>
+      <!-- Repeat for all questions -->
+    </Coordinates>
+  </Mcq>
+</TemplateConfiguration>
 ```
 
 See the [Developer Guide](DEVELOPER_GUIDE.md) for detailed configuration instructions.

@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
+using System.Xml.Serialization;
 using OMRAutoFillApp.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
@@ -21,7 +22,7 @@ namespace OMRAutoFillApp.Services
 
         public byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null)
         {
-            // Load configuration from uploaded JSON
+            // Load configuration from uploaded XML
             var config = LoadConfiguration(configurationStream);
             if (config == null)
                 throw new ArgumentException("Invalid template configuration");
@@ -54,12 +55,9 @@ namespace OMRAutoFillApp.Services
         {
             try
             {
-                using var reader = new StreamReader(configStream);
-                var json = reader.ReadToEnd();
-                return JsonSerializer.Deserialize<TemplateConfiguration>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var serializer = new XmlSerializer(typeof(TemplateConfiguration));
+                var config = serializer.Deserialize(configStream) as TemplateConfiguration;
+                return config;
             }
             catch
             {
@@ -107,10 +105,13 @@ namespace OMRAutoFillApp.Services
                 var digit = rollNumber[i].ToString();
                 var column = config.Roll.Columns[i];
 
-                if (column.ContainsKey(digit))
+                if (column.Positions != null)
                 {
-                    var coordinates = column[digit];
-                    DrawBubble(image, coordinates[0], coordinates[1]);
+                    var position = column.Positions.FirstOrDefault(p => p.Digit == digit);
+                    if (position != null)
+                    {
+                        DrawBubble(image, position.X, position.Y);
+                    }
                 }
             }
         }
@@ -124,30 +125,33 @@ namespace OMRAutoFillApp.Services
                 var digit = registrationNumber[i].ToString();
                 var column = config.Reg.Columns[i];
 
-                if (column.ContainsKey(digit))
+                if (column.Positions != null)
                 {
-                    var coordinates = column[digit];
-                    DrawBubble(image, coordinates[0], coordinates[1]);
+                    var position = column.Positions.FirstOrDefault(p => p.Digit == digit);
+                    if (position != null)
+                    {
+                        DrawBubble(image, position.X, position.Y);
+                    }
                 }
             }
         }
 
         private void FillMCQAnswers(Image image, TemplateConfiguration config, string[] mcqAnswers)
         {
-            if (config.Mcq == null) return;
+            if (config.Mcq == null || config.Mcq.Coordinates == null) return;
 
             for (int i = 0; i < mcqAnswers.Length; i++)
             {
                 var questionNumber = (i + 1).ToString();
                 var answer = mcqAnswers[i];
 
-                if (config.Mcq.Coordinates.ContainsKey(questionNumber))
+                var question = config.Mcq.Coordinates.FirstOrDefault(q => q.Number == questionNumber);
+                if (question != null && question.OptionPositions != null)
                 {
-                    var questionCoordinates = config.Mcq.Coordinates[questionNumber];
-                    if (questionCoordinates.ContainsKey(answer))
+                    var optionPos = question.OptionPositions.FirstOrDefault(o => o.Option == answer);
+                    if (optionPos != null)
                     {
-                        var coordinates = questionCoordinates[answer];
-                        DrawBubble(image, coordinates[0], coordinates[1]);
+                        DrawBubble(image, optionPos.X, optionPos.Y);
                     }
                 }
             }
