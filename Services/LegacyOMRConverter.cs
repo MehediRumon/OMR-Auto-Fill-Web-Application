@@ -21,6 +21,18 @@ namespace OMRAutoFillApp.Services
         /// </summary>
         public static TemplateConfiguration ConvertToTemplateConfiguration(LegacyOMRConfiguration legacyConfig)
         {
+            return ConvertToTemplateConfiguration(legacyConfig, StandardPageWidth, StandardPageHeight);
+        }
+        
+        /// <summary>
+        /// Converts a legacy OMR configuration to the current template configuration format,
+        /// using the actual image dimensions for accurate coordinate scaling.
+        /// </summary>
+        public static TemplateConfiguration ConvertToTemplateConfiguration(
+            LegacyOMRConfiguration legacyConfig, 
+            int actualImageWidth, 
+            int actualImageHeight)
+        {
             if (legacyConfig?.Design == null)
             {
                 throw new ArgumentException("Legacy configuration is invalid or missing design element.");
@@ -37,8 +49,8 @@ namespace OMRAutoFillApp.Services
             var firstOmr = legacyConfig.Design.OMRs.FirstOrDefault();
             if (firstOmr != null)
             {
-                templateConfig.Roll = ConvertRollConfiguration(firstOmr, legacyConfig.Design);
-                templateConfig.Reg = ConvertRegistrationConfiguration(firstOmr, legacyConfig.Design);
+                templateConfig.Roll = ConvertRollConfiguration(firstOmr, legacyConfig.Design, actualImageWidth, actualImageHeight);
+                templateConfig.Reg = ConvertRegistrationConfiguration(firstOmr, legacyConfig.Design, actualImageWidth, actualImageHeight);
             }
             
             // MCQ configuration would be empty for legacy SAQ templates
@@ -73,10 +85,22 @@ namespace OMRAutoFillApp.Services
                 return "SAQ";
             }
             
-            return "MCQ"; // Default to MCQ if unclear
+            // Check if there are imageParts (SAQ answer images)
+            var hasImageParts = legacyConfig.Design?.OMRs
+                .SelectMany(omr => omr.ImageParts)
+                .Any() ?? false;
+            
+            if (hasImageParts)
+            {
+                return "SAQ";
+            }
+            
+            // If no MCQ-specific indicators, default to SAQ (safer for legacy templates)
+            // Legacy templates with only roll/reg numbers are typically SAQ templates
+            return "SAQ";
         }
         
-        private static RollConfiguration? ConvertRollConfiguration(LegacyOMR omr, LegacyDesign design)
+        private static RollConfiguration? ConvertRollConfiguration(LegacyOMR omr, LegacyDesign design, int imageWidth, int imageHeight)
         {
             var rollRegion = omr.Regions.FirstOrDefault(r => 
                 r.MemberName?.Equals(RollNumberMemberName, StringComparison.OrdinalIgnoreCase) == true);
@@ -103,7 +127,9 @@ namespace OMRAutoFillApp.Services
                     rollRegion.Spacing?.Y ?? 0.5,
                     rollRegion.Direction,
                     design.GridX,
-                    design.GridY
+                    design.GridY,
+                    imageWidth,
+                    imageHeight
                 );
                 
                 config.Columns = columns;
@@ -112,7 +138,7 @@ namespace OMRAutoFillApp.Services
             return config;
         }
         
-        private static RegistrationConfiguration? ConvertRegistrationConfiguration(LegacyOMR omr, LegacyDesign design)
+        private static RegistrationConfiguration? ConvertRegistrationConfiguration(LegacyOMR omr, LegacyDesign design, int imageWidth, int imageHeight)
         {
             var regRegion = omr.Regions.FirstOrDefault(r => 
                 r.MemberName?.Equals(RegistrationNumberMemberName, StringComparison.OrdinalIgnoreCase) == true);
@@ -139,7 +165,9 @@ namespace OMRAutoFillApp.Services
                     regRegion.Spacing?.Y ?? 0.5,
                     regRegion.Direction,
                     design.GridX,
-                    design.GridY
+                    design.GridY,
+                    imageWidth,
+                    imageHeight
                 );
                 
                 config.Columns = columns;
@@ -156,13 +184,15 @@ namespace OMRAutoFillApp.Services
             double spacingY,
             string direction,
             int gridX,
-            int gridY)
+            int gridY,
+            int actualImageWidth,
+            int actualImageHeight)
         {
             var columns = new List<DigitCoordinate>();
             
-            // Calculate grid cell size using standard A4 dimensions at 300 DPI
-            double cellWidth = (double)StandardPageWidth / gridX;
-            double cellHeight = (double)StandardPageHeight / gridY;
+            // Calculate grid cell size using actual image dimensions
+            double cellWidth = (double)actualImageWidth / gridX;
+            double cellHeight = (double)actualImageHeight / gridY;
             
             for (int col = 0; col < numberOfColumns; col++)
             {

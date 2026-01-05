@@ -26,14 +26,14 @@ namespace OMRAutoFillApp.Services
 
         public byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null)
         {
-            // Load configuration from uploaded XML
-            var config = LoadConfiguration(configurationStream);
+            // Load the uploaded template image first (we need dimensions for legacy format)
+            using var image = Image.Load(templateImageStream);
+            
+            // Load configuration from uploaded XML, passing image dimensions
+            var config = LoadConfiguration(configurationStream, image.Width, image.Height);
 
             // Validate inputs
             ValidateInputs(config, rollNumber, registrationNumber, mcqAnswers);
-
-            // Load the uploaded template image
-            using var image = Image.Load(templateImageStream);
 
             // Fill roll number
             FillRollNumber(image, config, rollNumber);
@@ -53,7 +53,7 @@ namespace OMRAutoFillApp.Services
             return ms.ToArray();
         }
 
-        private TemplateConfiguration LoadConfiguration(Stream configStream)
+        private TemplateConfiguration LoadConfiguration(Stream configStream, int imageWidth, int imageHeight)
         {
             try
             {
@@ -69,7 +69,7 @@ namespace OMRAutoFillApp.Services
                 
                 if (rootElementName == "Page")
                 {
-                    // Legacy format - deserialize and convert
+                    // Legacy format - deserialize and convert using actual image dimensions
                     var legacySerializer = new XmlSerializer(typeof(LegacyOMRConfiguration));
                     var legacyConfig = legacySerializer.Deserialize(configStream) as LegacyOMRConfiguration;
                     
@@ -78,8 +78,8 @@ namespace OMRAutoFillApp.Services
                         throw new InvalidOperationException("Failed to deserialize legacy XML configuration.");
                     }
                     
-                    // Convert legacy format to current format
-                    config = LegacyOMRConverter.ConvertToTemplateConfiguration(legacyConfig);
+                    // Convert legacy format to current format with actual image dimensions for accurate scaling
+                    config = LegacyOMRConverter.ConvertToTemplateConfiguration(legacyConfig, imageWidth, imageHeight);
                 }
                 else if (rootElementName == "TemplateConfiguration")
                 {
