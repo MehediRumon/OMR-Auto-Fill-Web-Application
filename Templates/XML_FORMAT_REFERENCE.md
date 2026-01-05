@@ -1,13 +1,27 @@
 # XML Configuration Format Reference
 
-This document describes the correct XML format for OMR template configuration files.
+This document describes the XML formats supported for OMR template configuration files.
+
+## Supported Formats
+
+This application supports **TWO** XML configuration formats:
+
+1. **Current Format** (`<TemplateConfiguration>` root) - Recommended for new templates
+2. **Legacy Format** (`<Page>` root) - Automatically converted from older OMR systems
 
 ## Important Notes
 
 1. **Encoding**: Always use `utf-8` encoding
-2. **Root Element**: Must be `<TemplateConfiguration>` (case-sensitive)
-3. **No Namespaces**: Do not add xmlns attributes
-4. **Valid XML**: Ensure your XML is well-formed (matching open/close tags)
+2. **No Namespaces**: Do not add xmlns attributes
+3. **Valid XML**: Ensure your XML is well-formed (matching open/close tags)
+4. **Auto-Detection**: The application automatically detects which format you're using
+
+---
+
+## Current Format (Recommended)
+
+### Root Element
+Must be `<TemplateConfiguration>` (case-sensitive)
 
 ## MCQ Template Format
 
@@ -151,28 +165,89 @@ This document describes the correct XML format for OMR template configuration fi
 
 Before uploading your XML configuration:
 - [ ] XML declaration includes `encoding="utf-8"`
-- [ ] Root element is `<TemplateConfiguration>`
-- [ ] TemplateId, TemplateType are present
-- [ ] Roll/Digits matches number of Roll/Columns/Column elements
-- [ ] Each Roll Column has 10 Position elements (digits 0-9)
-- [ ] Reg/Digits matches number of Reg/Columns/Column elements
-- [ ] Each Reg Column has 10 Position elements (digits 0-9)
-- [ ] For MCQ: QuestionCount matches number of Question elements
-- [ ] For MCQ: Each Question has positions for all Options
+- [ ] Root element is `<TemplateConfiguration>` (current format) OR `<Page>` (legacy format)
+- [ ] For Current Format: TemplateId, TemplateType are present
+- [ ] For Current Format: Roll/Digits matches number of Roll/Columns/Column elements
+- [ ] For Current Format: Each Roll Column has 10 Position elements (digits 0-9)
+- [ ] For Current Format: Reg/Digits matches number of Reg/Columns/Column elements
+- [ ] For Current Format: Each Reg Column has 10 Position elements (digits 0-9)
+- [ ] For Current Format MCQ: QuestionCount matches number of Question elements
+- [ ] For Current Format MCQ: Each Question has positions for all Options
 - [ ] All Position elements have required attributes (digit/option, x, y)
 - [ ] No syntax errors (use XML validator tool)
+
+## Legacy Format Support
+
+### Overview
+
+The application automatically detects and converts legacy XML configurations with `<Page>` root element from older OMR systems.
+
+### Legacy Format Structure
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<Page name="UMS">
+  <design designFor="TemplateName" mappingStyle="grid-y-read-generate" gridX="61" gridY="91" blackPixelPercent="60">
+    <omr omrNo="1">
+      <region direction="y" charSet="0123456789" lines="11" memberName="rollNo">
+        <startCircle x="31" y="45" />
+        <startPadding x="0" y="0" />
+        <spacing x="0.5" y="0.5" />
+      </region>
+      <region direction="y" charSet="0123456789" lines="7" memberName="registrationNo">
+        <startCircle x="49" y="45"/>
+        <startPadding x="0.5" y="0"/>
+        <spacing x="0.5" y="0.5"/>
+      </region>
+    </omr>
+  </design>
+</Page>
+```
+
+### How It Works
+
+1. The application detects the `<Page>` root element
+2. Automatically parses the legacy format
+3. Converts grid-based coordinates to pixel coordinates
+4. Generates bubble positions for roll and registration numbers
+5. Uses the converted configuration for filling bubbles
+
+### Key Legacy Elements
+
+- **`<Page name="...">`**: Root element with page name
+- **`<design>`**: Contains grid parameters (gridX, gridY) and OMR sections
+- **`<omr omrNo="1">`**: OMR sheet section (can have multiple pages)
+- **`<region memberName="rollNo">`**: Roll number input region with grid coordinates
+- **`<region memberName="registrationNo">`**: Registration number input region
+- **`<startCircle>`**: Starting grid position (x, y in grid units)
+- **`<spacing>`**: Spacing between bubbles (in grid units)
+- **`direction="y"`**: Vertical layout (digits go down, columns go right)
+
+### Notes on Legacy Conversion
+
+- Grid coordinates are converted to pixel coordinates assuming standard A4 size at 300 DPI
+- The `lines` attribute determines the number of digit columns
+- SAQ templates (Short Answer Questions) are automatically detected
+- Virtual regions with default values are processed but may not affect bubble filling
 
 ## Sample Files
 
 Complete working examples are available in:
-- `Templates/MCQ/sample_mcq_template.xml` - MCQ template with 10 questions
-- `Templates/SAQ/sample_saq_template.xml` - SAQ template (no MCQ section)
+- `Templates/MCQ/sample_mcq_template.xml` - MCQ template with 10 questions (current format)
+- `Templates/SAQ/sample_saq_template.xml` - SAQ template (current format, no MCQ section)
 
 ## Getting Help
 
-If you encounter the error "There is an error in XML document (1, 2)", it typically means:
-1. The root element name is incorrect
-2. There's an XML namespace issue
-3. The XML is not well-formed (missing closing tag, etc.)
+The application now supports both current and legacy XML formats. If you encounter errors:
+
+**Supported Root Elements:**
+- `<TemplateConfiguration>` - Current format (recommended)
+- `<Page>` - Legacy format (automatically converted)
+
+**Common Issues:**
+1. XML namespace attributes (xmlns) - Remove all xmlns attributes
+2. Malformed XML - Check for matching opening/closing tags
+3. Empty or invalid XML file
+4. Unsupported root element - Use either `<TemplateConfiguration>` or `<Page>`
 
 Use an online XML validator to check your XML syntax before uploading.
