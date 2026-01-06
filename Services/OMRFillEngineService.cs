@@ -20,7 +20,7 @@ namespace OMRAutoFillApp.Services
 
     public class OMRFillEngineService : IOMRFillEngineService
     {
-        private const int BubbleRadius = 6; // Fixed radius per template specs to stay within bubble boundaries
+        private const int BubbleRadius = 6; // Fixed radius of 6px per template specs to stay within bubble boundaries
         private const int StreamReaderBufferSize = 1024;
         private const int MinimumXmlContentLength = 50; // Minimum characters for a valid XML document
 
