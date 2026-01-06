@@ -259,8 +259,11 @@ namespace OMRAutoFillApp.Services
                         double gridPosY = startY + digit * spacingY + startPaddingY;
                         
                         // Convert to pixel position and add border offset
-                        x = (int)Math.Round((gridPosX + 0.5) * cellWidth + offsetX);
-                        y = (int)Math.Round((gridPosY + 0.5) * cellHeight + offsetY);
+                        var centerOffsetX = Math.Abs(startPaddingX % 1) < 0.0001 ? 0.5 : 0.0;
+                        var centerOffsetY = Math.Abs(startPaddingY % 1) < 0.0001 ? 0.5 : 0.0;
+
+                        x = (int)Math.Round((gridPosX + centerOffsetX) * cellWidth + offsetX);
+                        y = (int)Math.Round((gridPosY + centerOffsetY) * cellHeight + offsetY);
                     }
                     else
                     {
@@ -269,8 +272,11 @@ namespace OMRAutoFillApp.Services
                         double gridPosY = startY + col * spacingY + startPaddingY;
                         
                         // Convert to pixel position and add border offset
-                        x = (int)Math.Round((gridPosX + 0.5) * cellWidth + offsetX);
-                        y = (int)Math.Round((gridPosY + 0.5) * cellHeight + offsetY);
+                        var centerOffsetX = Math.Abs(startPaddingX % 1) < 0.0001 ? 0.5 : 0.0;
+                        var centerOffsetY = Math.Abs(startPaddingY % 1) < 0.0001 ? 0.5 : 0.0;
+
+                        x = (int)Math.Round((gridPosX + centerOffsetX) * cellWidth + offsetX);
+                        y = (int)Math.Round((gridPosY + centerOffsetY) * cellHeight + offsetY);
                     }
                     
                     column.Positions.Add(new CoordinatePosition
