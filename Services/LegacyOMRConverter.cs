@@ -260,8 +260,8 @@ namespace OMRAutoFillApp.Services
                         double gridPosY = startY + digit * spacingY + startPaddingY;
                         
                         // Convert to pixel position and add border offset
-                        var centerOffsetX = IsWholeCellAligned(startPaddingX) ? 0.5 : 0.0;
-                        var centerOffsetY = IsWholeCellAligned(startPaddingY) ? 0.5 : 0.0;
+                        var centerOffsetX = GetCenterOffset(startPaddingX);
+                        var centerOffsetY = GetCenterOffset(startPaddingY);
 
                         x = (int)Math.Round((gridPosX + centerOffsetX) * cellWidth + offsetX);
                         y = (int)Math.Round((gridPosY + centerOffsetY) * cellHeight + offsetY);
@@ -273,8 +273,8 @@ namespace OMRAutoFillApp.Services
                         double gridPosY = startY + col * spacingY + startPaddingY;
                         
                         // Convert to pixel position and add border offset
-                        var centerOffsetX = IsWholeCellAligned(startPaddingX) ? 0.5 : 0.0;
-                        var centerOffsetY = IsWholeCellAligned(startPaddingY) ? 0.5 : 0.0;
+                        var centerOffsetX = GetCenterOffset(startPaddingX);
+                        var centerOffsetY = GetCenterOffset(startPaddingY);
 
                         x = (int)Math.Round((gridPosX + centerOffsetX) * cellWidth + offsetX);
                         y = (int)Math.Round((gridPosY + centerOffsetY) * cellHeight + offsetY);
@@ -292,6 +292,11 @@ namespace OMRAutoFillApp.Services
             }
             
             return columns;
+        }
+
+        private static double GetCenterOffset(double startPadding)
+        {
+            return IsWholeCellAligned(startPadding) ? 0.5 : 0.0;
         }
 
         private static bool IsWholeCellAligned(double startPadding)
