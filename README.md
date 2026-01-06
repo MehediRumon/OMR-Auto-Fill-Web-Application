@@ -289,7 +289,13 @@ Enterprise-ready design
   - Blank OMR template image (PNG/JPG) sized exactly as authored
   - Template configuration:
     - Current format: `<TemplateConfiguration>` XML
-    - Legacy format: `<Page>` XML (grid-based). Grid coordinates are applied as-is (no extra centering). Make sure the XML’s image/DPI assumptions match the blank image you upload. Example: a `<Page>` with `startCircle`, `startPadding`, and `spacing` under the roll/registration regions.
+    - Legacy format: `<Page>` XML (grid-based)
+      - Grid coordinates are applied as-is (no extra centering)
+      - XML image/DPI assumptions must match the uploaded blank image
+      - Check roll/registration regions for `startCircle`, `startPadding`, and `spacing`
 - Enter roll and registration numbers whose lengths match the XML digits.
 - (MCQ only) Enter answers if the template is MCQ.
-- Generate & download PNG. If bubbles look offset, verify image size/DPI, border removal percentages, and that `startCircle`, `startPadding`, and `spacing` (in the XML config) point to bubble centers.
+- Generate & download PNG. If bubbles look offset, verify:
+  - Image size/DPI match the XML
+  - Border removal percentages are correct
+  - `startCircle`, `startPadding`, and `spacing` in the XML point to bubble centers
