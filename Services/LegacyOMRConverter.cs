@@ -15,6 +15,7 @@ namespace OMRAutoFillApp.Services
         private const int StandardPageHeight = 3508; // Standard A4 height at 300 DPI
         private const string RollNumberMemberName = "rollNo";
         private const string RegistrationNumberMemberName = "registrationNo";
+        private const double PaddingTolerance = 0.0001;
         
         /// <summary>
         /// Converts a legacy OMR configuration to the current template configuration format.
@@ -259,8 +260,8 @@ namespace OMRAutoFillApp.Services
                         double gridPosY = startY + digit * spacingY + startPaddingY;
                         
                         // Convert to pixel position and add border offset
-                        var centerOffsetX = Math.Abs(startPaddingX % 1) < 0.0001 ? 0.5 : 0.0;
-                        var centerOffsetY = Math.Abs(startPaddingY % 1) < 0.0001 ? 0.5 : 0.0;
+                        var centerOffsetX = NeedsCentering(startPaddingX) ? 0.5 : 0.0;
+                        var centerOffsetY = NeedsCentering(startPaddingY) ? 0.5 : 0.0;
 
                         x = (int)Math.Round((gridPosX + centerOffsetX) * cellWidth + offsetX);
                         y = (int)Math.Round((gridPosY + centerOffsetY) * cellHeight + offsetY);
@@ -272,8 +273,8 @@ namespace OMRAutoFillApp.Services
                         double gridPosY = startY + col * spacingY + startPaddingY;
                         
                         // Convert to pixel position and add border offset
-                        var centerOffsetX = Math.Abs(startPaddingX % 1) < 0.0001 ? 0.5 : 0.0;
-                        var centerOffsetY = Math.Abs(startPaddingY % 1) < 0.0001 ? 0.5 : 0.0;
+                        var centerOffsetX = NeedsCentering(startPaddingX) ? 0.5 : 0.0;
+                        var centerOffsetY = NeedsCentering(startPaddingY) ? 0.5 : 0.0;
 
                         x = (int)Math.Round((gridPosX + centerOffsetX) * cellWidth + offsetX);
                         y = (int)Math.Round((gridPosY + centerOffsetY) * cellHeight + offsetY);
@@ -291,6 +292,11 @@ namespace OMRAutoFillApp.Services
             }
             
             return columns;
+        }
+
+        private static bool NeedsCentering(double startPadding)
+        {
+            return Math.Abs(startPadding % 1) < PaddingTolerance;
         }
     }
 }
