@@ -184,6 +184,12 @@ To find the coordinates for bubbles in your template:
    - Use consistent spacing for easier configuration
    - Test with a sample OMR to verify accuracy
 
+### Legacy XML (Page) Templates
+- The app auto-detects legacy `<Page>` XML and converts grid coordinates using the uploaded image size and DPI (default 300).
+- Grid values (`startCircle`, `spacing`, `startPadding`, `borderRemovePercent`) come directly from the XML; no extra centering offsets are added, so ensure the XML matches the exact blank image you upload.
+- `lines` must match the number of roll/registration digit columns; each column maps digits 0–9 in order using the provided spacing.
+- If bubbles are offset, verify: image DPI/size matches the XML authoring environment, border removal percentages are correct, and `startCircle` points to the first bubble center.
+
 ### Testing Your Template
 
 1. Open the application in your browser
