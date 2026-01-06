@@ -291,9 +291,9 @@ Enterprise-ready design
     - Current format: `<TemplateConfiguration>` XML
     - Legacy format: `<Page>` XML (grid-based)
       - Grid coordinates are applied as-is (no extra centering)
-      - XML image/DPI assumptions must match the uploaded blank image
+      - Ensure the XML’s image dimensions and DPI settings match the uploaded blank image
       - Check roll/registration regions for `startCircle`, `startPadding`, and `spacing`
-- Enter roll and registration numbers whose lengths match the XML digits.
+- Enter roll and registration numbers with the same digit counts specified in the XML configuration.
 - (MCQ only) Enter answers if the template is MCQ.
 - Generate & download PNG. If bubbles look offset, verify:
   - Image size/DPI match the XML
