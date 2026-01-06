@@ -292,7 +292,7 @@ Enterprise-ready design
     - Legacy format: `<Page>` XML (grid-based)
       - Grid coordinates are applied as-is (no extra centering)
       - Ensure the XML’s image dimensions and DPI settings match the uploaded blank image
-      - Check roll/registration regions for `startCircle`, `startPadding`, and `spacing`
+      - Check roll/registration regions for `startCircle` (first bubble center), `startPadding` (offset from grid origin), and `spacing` (distance between bubbles)
 - Enter roll and registration numbers with the same digit counts specified in the XML configuration.
 - (MCQ only) Enter answers if the template is MCQ.
 - Generate & download PNG. If bubbles look offset, verify:
