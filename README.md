@@ -1,282 +1,113 @@
-OMR Auto-Fill Web Application (ASP.NET)
-1. Project Overview
-1.1 Project Name
-
-OMR Auto-Fill System
-
-1.2 Objective
-
-To develop a web-based ASP.NET application that automatically fills OMR answer sheets by overlaying filled bubbles based on user input, while supporting a large and growing number of MCQ and SAQ templates, without requiring code changes for new templates.
-
-2. Key Design Principles (MANDATORY)
-
-Template-Driven Architecture
-All OMR behavior is controlled by template configuration, not hard-coded logic.
-
-Unlimited Templates
-The system must support:
-
-Many MCQ templates
-
-Many SAQ (written) templates
-
-No Bubble Detection
-The system does not scan or detect bubbles.
-It draws filled circles at predefined coordinates.
-
-Zero Code Change for New Templates
-Adding a new OMR template must require only configuration and assets, not new code.
-
-3. Scope
-3.1 In Scope
-
-Upload blank OMR template (image/PDF)
-
-Template selection (MCQ / SAQ)
-
-Roll number auto-fill
-
-Registration number auto-fill
-
-MCQ answer auto-fill (MCQ templates only)
-
-Download filled OMR
-
-Support for many template layouts
-
-3.2 Out of Scope
-
-Handwriting recognition
-
-OMR scanning / evaluation
-
-Bubble detection
-
-Automatic layout detection
-
-4. Users
-
-Exam administrators
-
-Coaching centers
-
-Teachers
-
-Test organizers
-
-5. Template Types
-5.1 MCQ Templates
-
-MCQ templates may differ by:
-
-Number of questions (e.g., 50, 80, 100)
-
-Options per question (A–D or A–E)
-
-Bubble positions
-
-Roll/Reg digit counts
-
-Page layout
-
-5.2 SAQ (Written) Templates
-
-SAQ templates may differ by:
-
-Roll/Reg bubble layout
-
-Page size
-
-Written answer area
-
-📌 SAQ templates only fill Roll and Registration fields
-
-6. Template Definition (CRITICAL)
-
-Each template is defined by:
-
-Field	Description
-TemplateId	Unique identifier
-TemplateName	Display name
-TemplateType	MCQ / SAQ
-BaseImagePath	Blank OMR image or PDF
-DPI	Fixed (300)
-RollDigitCount	Number of roll digits
-RegDigitCount	Number of reg digits
-MCQCount	MCQ templates only
-Options	MCQ options (A–D / A–E)
-CoordinateConfig	JSON file
-7. Template Configuration Format (STANDARD)
-7.1 MCQ Template JSON
-{
-  "templateId": "MCQ_2024_01",
-  "templateType": "MCQ",
-  "dpi": 300,
-
-  "roll": {
-    "digits": 10,
-    "columns": [
-      { "0": [410,820], "1": [410,800], "2": [410,780], "3": [410,760], "4": [410,740], "5": [410,720], "6": [410,700], "7": [410,680], "8": [410,660], "9": [410,640] }
-    ]
-  },
-
-  "reg": {
-    "digits": 8,
-    "columns": [
-      { "0": [520,820], "1": [520,800], "2": [520,780], "3": [520,760], "4": [520,740], "5": [520,720], "6": [520,700], "7": [520,680], "8": [520,660], "9": [520,640] }
-    ]
-  },
-
-  "mcq": {
-    "questionCount": 100,
-    "options": ["A","B","C","D"],
-    "coordinates": {
-      "1": { "A": [120,520], "B": [145,520], "C": [170,520], "D": [195,520] }
-    }
-  }
-}
-
-7.2 SAQ Template JSON
-{
-  "templateId": "SAQ_2025_01",
-  "templateType": "SAQ",
-  "dpi": 300,
-
-  "roll": { "...": "..." },
-  "reg": { "...": "..." }
-}
-
-8. Functional Requirements
-8.1 Template Selection
-
-User must select a template before filling
-
-Templates grouped by:
-
-MCQ
-
-SAQ
-
-8.2 Input Validation
-
-Roll and Reg must be numeric
-
-Length validated per template
-
-MCQ answer count must match template
-
-8.3 OMR Filling Logic
-
-Draw solid black circles
-
-Fixed radius (5–7 px)
-
-No scaling or rotation
-
-Preserve original DPI
-
-8.4 Output
-
-Download filled OMR
-
-Image format (Phase-1)
-
-PDF format (Phase-2)
-
-9. Non-Functional Requirements
-Performance
-
-≤ 2 seconds per OMR
-
-Accuracy
-
-≥ 99.99% positional accuracy
-
-Reliability
-
-Original templates remain unchanged
-
-Security
-
-Uploaded files deleted after use
-
-Templates are read-only
-
-10. System Architecture
-Browser
-  ↓
-ASP.NET UI
-  ↓
-Template Loader (JSON)
-  ↓
-Generic OMR Fill Engine
-  ↓
-Image/PDF Generator
-  ↓
-Download
-
-11. SAQ Handling Rules
-
-Only Roll & Reg auto-filled
-
-Written areas untouched
-
-Same template workflow as MCQ
-
-12. Error Handling
-
-Invalid template selection → warning
-
-Input mismatch → block generation
-
-Missing MCQ answers → configurable behavior
-
-13. Template Management
-Phase-1
-
-Templates stored as:
-
-Image/PDF
-
-JSON config
-
-Uploaded manually to server
-
-Phase-2
-
-Admin panel
-
-Visual coordinate mapping
-
-Template versioning
-
-14. Future Enhancements
-
-Batch generation (Excel upload)
-
-ZIP download
-
-Admin UI
-
-OMR scanning & evaluation
-
-Audit logging
-
-15. Acceptance Criteria
-
-✔ Multiple MCQ & SAQ templates supported
-✔ No code change for new templates
-✔ Scanner-safe output
-✔ Correct Roll, Reg, MCQ filling
-
-16. Final Summary
-
-Many templates → data-driven JSON
-
-MCQ & SAQ separated by type
-
-One generic engine
-
-No layout detection
-
-Enterprise-ready design
+# OMR Auto-Fill Web Application (ASP.NET Core MVC)
+
+An ASP.NET Core MVC application that automatically fills Optical Mark Recognition (OMR) answer sheets by overlaying filled bubbles on a blank template image. The app is fully template-driven: add a new template by uploading an image and an XML configuration file—no code changes required.
+
+## Quick Start
+
+### Prerequisites
+- .NET 8 SDK or later
+- Git (optional, for cloning)
+
+### Run Locally
+```bash
+git clone https://github.com/MehediRumon/OMR-Auto-Fill-Web-Application.git
+cd OMR-Auto-Fill-Web-Application
+dotnet restore
+dotnet build
+dotnet run
+```
+The app runs at `http://localhost:5000` (or the port configured in `launchSettings.json`).
+
+## How to Use
+1. **Prepare files**
+   - Blank OMR template image (`.png`/`.jpg`)
+   - XML configuration file defining bubble coordinates (see [XML format reference](Templates/XML_FORMAT_REFERENCE.md))
+2. **Open the web UI** at `http://localhost:5000`.
+3. **Upload** the template image and XML configuration.
+4. **Enter data**: roll number, registration number, and MCQ answers (comma-separated) when applicable.
+5. **Generate & download** the filled OMR (PNG).
+
+Sample templates: `Templates/MCQ/sample_mcq_template.*` and `Templates/SAQ/sample_saq_template.*`.
+
+## Template Configuration (XML)
+- Root element: `<TemplateConfiguration>` (current format)  
+- Supports both MCQ and SAQ templates  
+- Legacy `<Page>` XML is auto-detected and converted  
+- Full schema and examples: [Templates/XML_FORMAT_REFERENCE.md](Templates/XML_FORMAT_REFERENCE.md)
+
+### Minimal MCQ Example
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<TemplateConfiguration>
+  <TemplateId>MCQ_SAMPLE</TemplateId>
+  <TemplateType>MCQ</TemplateType>
+  <Dpi>300</Dpi>
+  <Roll>
+    <Digits>6</Digits>
+    <Columns>
+      <Column>
+        <Positions>
+          <Position digit="0" x="100" y="100" />
+          <Position digit="1" x="100" y="120" />
+          <Position digit="2" x="100" y="140" />
+          <Position digit="3" x="100" y="160" />
+          <Position digit="4" x="100" y="180" />
+          <Position digit="5" x="100" y="200" />
+          <Position digit="6" x="100" y="220" />
+          <Position digit="7" x="100" y="240" />
+          <Position digit="8" x="100" y="260" />
+          <Position digit="9" x="100" y="280" />
+        </Positions>
+      </Column>
+      <!-- repeat Column for each digit position -->
+    </Columns>
+  </Roll>
+  <Reg>
+    <Digits>8</Digits>
+    <Columns>
+      <!-- same structure as Roll -->
+    </Columns>
+  </Reg>
+  <Mcq>
+    <QuestionCount>10</QuestionCount>
+    <Options>
+      <Option>A</Option><Option>B</Option><Option>C</Option><Option>D</Option>
+    </Options>
+    <Coordinates>
+      <Question number="1">
+        <OptionPositions>
+          <Position option="A" x="120" y="520" />
+          <Position option="B" x="145" y="520" />
+          <Position option="C" x="170" y="520" />
+          <Position option="D" x="195" y="520" />
+        </OptionPositions>
+      </Question>
+      <!-- repeat for each question -->
+    </Coordinates>
+  </Mcq>
+</TemplateConfiguration>
+```
+
+## Project Structure
+```
+OMRAutoFillApp/
+├── Controllers/          # MVC controllers
+├── Models/               # Data models and view models
+├── Services/             # OMR fill engine and loaders
+├── Templates/            # Sample images and XML configs (MCQ/SAQ)
+├── Views/                # Razor views
+└── wwwroot/              # Static assets (CSS/JS)
+```
+
+## Documentation
+- [User Guide](USER_GUIDE.md) – step-by-step usage for end users
+- [Developer Guide](DEVELOPER_GUIDE.md) – architecture, development, and troubleshooting
+- [XML Format Reference](Templates/XML_FORMAT_REFERENCE.md) – full schema and examples
+- [Project Summary](PROJECT_SUMMARY.md) – implementation highlights and status
+
+## System Highlights (Reference)
+- Template-driven architecture; unlimited MCQ & SAQ templates
+- No bubble detection; draws filled circles at predefined coordinates
+- Zero code change needed for new templates (upload image + XML)
+- Validation: numeric roll/reg, option validation, question count checks
+- Output: PNG (PDF planned for future phase)
