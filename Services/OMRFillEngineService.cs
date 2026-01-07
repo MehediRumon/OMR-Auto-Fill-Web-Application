@@ -320,16 +320,17 @@ namespace OMRAutoFillApp.Services
 
         private static float CalculateScaledBubbleRadius(float scaleX, float scaleY)
         {
-            var averageScale = (scaleX + scaleY) / 2f;
-            return Math.Max(1f, BubbleRadius * averageScale);
+            var constrainedScale = Math.Min(scaleX, scaleY);
+            return Math.Max(1f, BubbleRadius * constrainedScale);
         }
 
         private static void DrawDebugOverlay(Image image, TemplateConfiguration config, float scaleX, float scaleY, float bubbleRadius)
         {
             var markerRadius = Math.Max(2f, bubbleRadius * 0.35f);
             var fontSize = Math.Max(8f, markerRadius * 2);
-            var fontName = SystemFonts.Families.Any() ? SystemFonts.Families.First().Name : "Arial";
-            var font = SystemFonts.CreateFont(fontName, fontSize);
+            var font = SystemFonts.Families.Any()
+                ? SystemFonts.CreateFont(SystemFonts.Families.First().Name, fontSize)
+                : null;
 
             image.Mutate(ctx =>
             {
@@ -344,8 +345,7 @@ namespace OMRAutoFillApp.Services
                         {
                             var x = position.X * scaleX;
                             var y = position.Y * scaleY;
-                            ctx.Fill(Color.Red, new EllipsePolygon(x, y, markerRadius));
-                            ctx.DrawText($"R{colIndex + 1}:{position.Digit}", font, Color.Red, new PointF(x + markerRadius + 1, y - markerRadius));
+                            DrawDebugMarker(ctx, x, y, markerRadius, font, $"R{colIndex + 1}:{position.Digit}");
                         }
                     }
                 }
@@ -361,8 +361,7 @@ namespace OMRAutoFillApp.Services
                         {
                             var x = position.X * scaleX;
                             var y = position.Y * scaleY;
-                            ctx.Fill(Color.Red, new EllipsePolygon(x, y, markerRadius));
-                            ctx.DrawText($"G{colIndex + 1}:{position.Digit}", font, Color.Red, new PointF(x + markerRadius + 1, y - markerRadius));
+                            DrawDebugMarker(ctx, x, y, markerRadius, font, $"G{colIndex + 1}:{position.Digit}");
                         }
                     }
                 }
@@ -377,12 +376,21 @@ namespace OMRAutoFillApp.Services
                         {
                             var x = option.X * scaleX;
                             var y = option.Y * scaleY;
-                            ctx.Fill(Color.Red, new EllipsePolygon(x, y, markerRadius));
-                            ctx.DrawText($"{question.Number}{option.Option}", font, Color.Red, new PointF(x + markerRadius + 1, y - markerRadius));
+                            DrawDebugMarker(ctx, x, y, markerRadius, font, $"{question.Number}{option.Option}");
                         }
                     }
                 }
             });
+        }
+
+        private static void DrawDebugMarker(IImageProcessingContext ctx, float x, float y, float markerRadius, Font? font, string label)
+        {
+            ctx.Fill(Color.Red, new EllipsePolygon(x, y, markerRadius));
+
+            if (font != null)
+            {
+                ctx.DrawText(label, font, Color.Red, new PointF(x + markerRadius + 1, y - markerRadius));
+            }
         }
     }
 }
