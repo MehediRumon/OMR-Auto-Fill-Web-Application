@@ -2,7 +2,7 @@
 
 ## Overview
 
-This ASP.NET Core MVC application automatically fills OMR (Optical Mark Recognition) answer sheets by overlaying filled bubbles based on user input. The system uses a **user-upload model** where users upload their own template images and configurations, providing maximum flexibility without requiring pre-configured templates.
+This ASP.NET Core MVC application automatically fills OMR (Optical Mark Recognition) answer sheets by overlaying filled bubbles based on user input. The system uses a **user-upload model** where users upload their own template images and XML configurations, providing maximum flexibility without requiring pre-configured templates.
 
 ## Project Structure
 
@@ -36,7 +36,7 @@ OMRAutoFillApp/
 
 ### Upload-Based Architecture
 - Users upload their own OMR template images (PNG/JPG)
-- Users upload JSON configuration files with bubble coordinates
+- Users upload XML configuration files with bubble coordinates
 - No server-side template storage or pre-configuration needed
 - Complete flexibility for any template format
 
@@ -79,11 +79,11 @@ Users no longer need to select pre-configured templates. Instead, they:
 
 1. **Prepare template files:**
    - Create or obtain a blank OMR template image (PNG/JPG)
-   - Create a JSON configuration file with bubble coordinates
+   - Create an XML configuration file with bubble coordinates (see `Templates/XML_FORMAT_REFERENCE.md`)
 
 2. **Upload files:**
    - Upload the template image through the web interface
-   - Upload the configuration JSON file
+   - Upload the configuration XML file
 
 3. **Fill information:**
    - Enter roll number and registration number
@@ -95,78 +95,84 @@ Users no longer need to select pre-configured templates. Instead, they:
 
 ### Creating Template Configurations
 
-To create a new template configuration, follow this format:
+To create a new template configuration, follow the XML format used by the application (full reference in `Templates/XML_FORMAT_REFERENCE.md`).
 
 #### MCQ Template Example:
-```json
-{
-  "templateId": "MCQ_2024_01",
-  "templateType": "MCQ",
-  "dpi": 300,
-  "roll": {
-    "digits": 6,
-    "columns": [
-      {
-        "0": [100, 100],
-        "1": [100, 120],
-        "2": [100, 140],
-        ...
-        "9": [100, 280]
-      },
-      // Repeat for each digit position
-    ]
-  },
-  "reg": {
-    "digits": 8,
-    "columns": [
-      {
-        "0": [320, 100],
-        "1": [320, 120],
-        ...
-        "9": [320, 280]
-      },
-      // Repeat for each digit position
-    ]
-  },
-  "mcq": {
-    "questionCount": 100,
-    "options": ["A", "B", "C", "D"],
-    "coordinates": {
-      "1": {
-        "A": [120, 520],
-        "B": [145, 520],
-        "C": [170, 520],
-        "D": [195, 520]
-      },
-      "2": {
-        "A": [120, 550],
-        ...
-      },
-      // Repeat for all questions
-    }
-  }
-}
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<TemplateConfiguration>
+  <TemplateId>MCQ_2024_01</TemplateId>
+  <TemplateType>MCQ</TemplateType>
+  <Dpi>300</Dpi>
+  <Roll>
+    <Digits>6</Digits>
+    <Columns>
+      <Column>
+        <Positions>
+          <Position digit="0" x="100" y="100" />
+          <Position digit="1" x="100" y="120" />
+          <Position digit="2" x="100" y="140" />
+          <Position digit="3" x="100" y="160" />
+          <Position digit="4" x="100" y="180" />
+          <Position digit="5" x="100" y="200" />
+          <Position digit="6" x="100" y="220" />
+          <Position digit="7" x="100" y="240" />
+          <Position digit="8" x="100" y="260" />
+          <Position digit="9" x="100" y="280" />
+        </Positions>
+      </Column>
+      <!-- Repeat Column for each digit position -->
+    </Columns>
+  </Roll>
+  <Reg>
+    <Digits>8</Digits>
+    <Columns>
+      <!-- Same structure as Roll -->
+    </Columns>
+  </Reg>
+  <Mcq>
+    <QuestionCount>100</QuestionCount>
+    <Options>
+      <Option>A</Option>
+      <Option>B</Option>
+      <Option>C</Option>
+      <Option>D</Option>
+    </Options>
+    <Coordinates>
+      <Question number="1">
+        <OptionPositions>
+          <Position option="A" x="120" y="520" />
+          <Position option="B" x="145" y="520" />
+          <Position option="C" x="170" y="520" />
+          <Position option="D" x="195" y="520" />
+        </OptionPositions>
+      </Question>
+      <!-- Repeat for all questions -->
+    </Coordinates>
+  </Mcq>
+</TemplateConfiguration>
 ```
 
 #### SAQ Template Example:
-```json
-{
-  "templateId": "SAQ_2025_01",
-  "templateType": "SAQ",
-  "dpi": 300,
-  "roll": {
-    "digits": 6,
-    "columns": [
-      // Same format as MCQ
-    ]
-  },
-  "reg": {
-    "digits": 8,
-    "columns": [
-      // Same format as MCQ
-    ]
-  }
-}
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<TemplateConfiguration>
+  <TemplateId>SAQ_2025_01</TemplateId>
+  <TemplateType>SAQ</TemplateType>
+  <Dpi>300</Dpi>
+  <Roll>
+    <Digits>6</Digits>
+    <Columns>
+      <!-- Same structure as MCQ -->
+    </Columns>
+  </Roll>
+  <Reg>
+    <Digits>8</Digits>
+    <Columns>
+      <!-- Same structure as MCQ -->
+    </Columns>
+  </Reg>
+</TemplateConfiguration>
 ```
 
 ### Determining Coordinates
@@ -197,26 +203,24 @@ To find the coordinates for bubbles in your template:
 ### Template Configuration Properties
 
 #### Root Level
-- `templateId` (string): Unique identifier for the template
-- `templateType` (string): "MCQ" or "SAQ"
-- `dpi` (int): Resolution, typically 300
+- `TemplateId` (string): Unique identifier for the template
+- `TemplateType` (string): "MCQ" or "SAQ"
+- `Dpi` (int): Resolution, typically 300
 
 #### Roll Configuration
-- `digits` (int): Number of roll number digits
-- `columns` (array): One entry per digit position
-  - Each column maps digit values (0-9) to coordinates [x, y]
+- `Digits` (int): Number of roll number digits
+- `Columns` (array): One entry per digit position
+  - Each column lists digit values (0-9) as `<Position digit="0-9" x=".." y=".." />`
 
 #### Registration Configuration
-- `digits` (int): Number of registration number digits
-- `columns` (array): One entry per digit position
-  - Each column maps digit values (0-9) to coordinates [x, y]
+- `Digits` (int): Number of registration number digits
+- `Columns` (array): One entry per digit position
+  - Same `<Position>` structure as Roll
 
 #### MCQ Configuration (MCQ templates only)
-- `questionCount` (int): Total number of questions
-- `options` (array): Valid answer options (e.g., ["A", "B", "C", "D"])
-- `coordinates` (object): Maps question numbers to option coordinates
-  - Key: Question number as string ("1", "2", etc.)
-  - Value: Object mapping options to coordinates
+- `QuestionCount` (int): Total number of questions
+- `Options` (array): Valid answer options (e.g., A, B, C, D)
+- `Coordinates`: Maps question numbers to option coordinates via `<Question number="...">` and `<Position option="...">`
 
 ## Validation Rules
 
@@ -230,15 +234,15 @@ To find the coordinates for bubbles in your template:
 
 ### Template Validation
 - Template ID must be unique
-- Configuration file must exist and be valid JSON
+- Configuration file must exist and be valid XML
 - Corresponding image file must exist
-- Coordinates must be valid [x, y] arrays
+- Coordinates must be valid [x, y] pairs in the XML positions
 
 ## Troubleshooting
 
 ### Template Not Appearing
-- Check that both .json and image file exist with matching names
-- Verify JSON is valid (use a JSON validator)
+- Check that both .xml and image file exist with matching names
+- Verify XML is valid (use an XML validator)
 - Restart the application to reload templates
 
 ### Bubbles Not Filled Correctly
@@ -271,7 +275,7 @@ To find the coordinates for bubbles in your template:
 
 ### Design Principles
 
-1. **Template-Driven**: All behavior configured through JSON
+1. **Template-Driven**: All behavior configured through XML
 2. **Zero Code Changes**: New templates require only configuration
 3. **Separation of Concerns**: Clear separation between template loading, validation, and filling
 4. **Type Safety**: Strong typing with C# models
