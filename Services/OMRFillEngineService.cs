@@ -22,7 +22,7 @@ namespace OMRAutoFillApp.Services
 
     public class OMRFillEngineService : IOMRFillEngineService
     {
-        private const float BubbleRadius = 15; // Base bubble radius to ensure full coverage of printed circles
+        private const float BubbleRadius = 15; // Base bubble radius (pixels) sized for 300 DPI templates before scaling
         private const int StreamReaderBufferSize = 1024;
         private const int MinimumXmlContentLength = 50; // Minimum characters for a valid XML document
         private const int MinimumReferenceSize = 1;
@@ -333,13 +333,21 @@ namespace OMRAutoFillApp.Services
             var fontSize = Math.Max(8f, markerRadius * 2);
             Font? font = null;
 
-            if (SystemFonts.Families.Any())
+            var fontFamilies = SystemFonts.Families.ToList();
+
+            if (fontFamilies.Count > 0)
             {
+                var family = fontFamilies[0];
+
                 try
                 {
-                    font = SystemFonts.CreateFont(SystemFonts.Families.First().Name, fontSize);
+                    font = SystemFonts.CreateFont(family.Name, fontSize);
                 }
-                catch (Exception ex)
+                catch (InvalidOperationException ex)
+                {
+                    Debug.WriteLine($"Debug overlay font fallback failed: {ex.Message}");
+                }
+                catch (ArgumentException ex)
                 {
                     Debug.WriteLine($"Debug overlay font fallback failed: {ex.Message}");
                 }
