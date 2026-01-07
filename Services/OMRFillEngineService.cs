@@ -334,22 +334,29 @@ namespace OMRAutoFillApp.Services
             Font? font = null;
 
             var fontFamilies = SystemFonts.Families.ToList();
+            var preferredFonts = new[] { "Arial", "Helvetica", "DejaVu Sans", "Liberation Sans" };
+            var selectedFamily = preferredFonts
+                .Select(name => fontFamilies.FirstOrDefault(f => f.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                .FirstOrDefault(f => !string.IsNullOrWhiteSpace(f.Name));
 
-            if (fontFamilies.Count > 0)
+            if (string.IsNullOrWhiteSpace(selectedFamily.Name))
             {
-                var family = fontFamilies[0];
+                selectedFamily = fontFamilies.FirstOrDefault(f => !string.IsNullOrWhiteSpace(f.Name));
+            }
 
+            if (!string.IsNullOrWhiteSpace(selectedFamily.Name))
+            {
                 try
                 {
-                    font = SystemFonts.CreateFont(family.Name, fontSize);
+                    font = SystemFonts.CreateFont(selectedFamily.Name, fontSize);
                 }
                 catch (InvalidOperationException ex)
                 {
-                    Debug.WriteLine($"Debug overlay font fallback failed: {ex.Message}");
+                    Debug.WriteLine($"Debug overlay font creation failed: {ex.Message}");
                 }
                 catch (ArgumentException ex)
                 {
-                    Debug.WriteLine($"Debug overlay font fallback failed: {ex.Message}");
+                    Debug.WriteLine($"Debug overlay font creation failed: {ex.Message}");
                 }
             }
 
