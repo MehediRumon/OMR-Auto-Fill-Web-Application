@@ -5,6 +5,8 @@
   <Dpi>300</Dpi>
   <!-- Reference size: A4 page at 300 DPI -->
   <ReferenceSize width="2480" height="3508" />
+  <!-- Optional origin tweak if scans crop margins -->
+  <OriginOffset x="0" y="0" />
   <Roll>
     <Digits>6</Digits>
     <Columns>

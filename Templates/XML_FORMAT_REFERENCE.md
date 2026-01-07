@@ -127,6 +127,7 @@ Must be `<TemplateConfiguration>` (case-sensitive)
 - `<TemplateType>`: Either "MCQ" or "SAQ" (required)
 - `<Dpi>`: DPI of the template image, default 300 (optional)
 - `<ReferenceSize>`: Reference pixel dimensions of the template image. Attributes: `width`, `height`. Required for reliable scaling across uploads.
+- `<OriginOffset>`: Optional pixel offset to shift all coordinates after scaling (useful if scans crop margins). Attributes: `x`, `y`.
 
 ### Roll Number Configuration
 - `<Roll>`: Roll number bubble configuration (required)

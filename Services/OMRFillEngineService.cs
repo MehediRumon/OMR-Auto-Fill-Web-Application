@@ -42,22 +42,23 @@ namespace OMRAutoFillApp.Services
 
             var (scaleX, scaleY) = CalculateScaleFactors(image, config);
             var scaledBubbleRadius = CalculateScaledBubbleRadius(scaleX, scaleY);
+            var offsets = CalculateOffsets(config, scaleX, scaleY);
 
             // Fill roll number
-            FillRollNumber(image, config, rollNumber, scaleX, scaleY, scaledBubbleRadius);
+            FillRollNumber(image, config, rollNumber, scaleX, scaleY, scaledBubbleRadius, offsets);
 
             // Fill registration number
-            FillRegistrationNumber(image, config, registrationNumber, scaleX, scaleY, scaledBubbleRadius);
+            FillRegistrationNumber(image, config, registrationNumber, scaleX, scaleY, scaledBubbleRadius, offsets);
 
             // Fill MCQ answers (only for MCQ templates)
             if (config.TemplateType.Equals("MCQ", StringComparison.OrdinalIgnoreCase) && mcqAnswers != null)
             {
-                FillMCQAnswers(image, config, mcqAnswers, scaleX, scaleY, scaledBubbleRadius);
+                FillMCQAnswers(image, config, mcqAnswers, scaleX, scaleY, scaledBubbleRadius, offsets);
             }
 
             if (debugOverlay)
             {
-                DrawDebugOverlay(image, config, scaleX, scaleY, scaledBubbleRadius);
+                DrawDebugOverlay(image, config, scaleX, scaleY, scaledBubbleRadius, offsets);
             }
 
             // Convert to byte array
@@ -228,7 +229,7 @@ namespace OMRAutoFillApp.Services
             }
         }
 
-        private void FillRollNumber(Image image, TemplateConfiguration config, string rollNumber, float scaleX, float scaleY, float bubbleRadius)
+        private void FillRollNumber(Image image, TemplateConfiguration config, string rollNumber, float scaleX, float scaleY, float bubbleRadius, (float offsetX, float offsetY) offsets)
         {
             if (config.Roll == null || config.Roll.Columns == null) return;
 
@@ -242,13 +243,13 @@ namespace OMRAutoFillApp.Services
                     var position = column.Positions.FirstOrDefault(p => p.Digit == digit);
                     if (position != null)
                     {
-                        DrawBubble(image, position.X, position.Y, scaleX, scaleY, bubbleRadius);
+                        DrawBubble(image, position.X, position.Y, scaleX, scaleY, bubbleRadius, offsets);
                     }
                 }
             }
         }
 
-        private void FillRegistrationNumber(Image image, TemplateConfiguration config, string registrationNumber, float scaleX, float scaleY, float bubbleRadius)
+        private void FillRegistrationNumber(Image image, TemplateConfiguration config, string registrationNumber, float scaleX, float scaleY, float bubbleRadius, (float offsetX, float offsetY) offsets)
         {
             if (config.Reg == null || config.Reg.Columns == null) return;
 
@@ -262,13 +263,13 @@ namespace OMRAutoFillApp.Services
                     var position = column.Positions.FirstOrDefault(p => p.Digit == digit);
                     if (position != null)
                     {
-                        DrawBubble(image, position.X, position.Y, scaleX, scaleY, bubbleRadius);
+                        DrawBubble(image, position.X, position.Y, scaleX, scaleY, bubbleRadius, offsets);
                     }
                 }
             }
         }
 
-        private void FillMCQAnswers(Image image, TemplateConfiguration config, string[] mcqAnswers, float scaleX, float scaleY, float bubbleRadius)
+        private void FillMCQAnswers(Image image, TemplateConfiguration config, string[] mcqAnswers, float scaleX, float scaleY, float bubbleRadius, (float offsetX, float offsetY) offsets)
         {
             if (config.Mcq == null || config.Mcq.Coordinates == null) return;
 
@@ -283,16 +284,16 @@ namespace OMRAutoFillApp.Services
                     var optionPos = question.OptionPositions.FirstOrDefault(o => o.Option == answer);
                     if (optionPos != null)
                     {
-                        DrawBubble(image, optionPos.X, optionPos.Y, scaleX, scaleY, bubbleRadius);
+                        DrawBubble(image, optionPos.X, optionPos.Y, scaleX, scaleY, bubbleRadius, offsets);
                     }
                 }
             }
         }
 
-        private void DrawBubble(Image image, int originalX, int originalY, float scaleX, float scaleY, float bubbleRadius)
+        private void DrawBubble(Image image, int originalX, int originalY, float scaleX, float scaleY, float bubbleRadius, (float offsetX, float offsetY) offsets)
         {
-            var scaledX = originalX * scaleX;
-            var scaledY = originalY * scaleY;
+            var scaledX = originalX * scaleX + offsets.offsetX;
+            var scaledY = originalY * scaleY + offsets.offsetY;
 
             image.Mutate(ctx =>
             {
@@ -321,13 +322,21 @@ namespace OMRAutoFillApp.Services
             return (image.Width / (float)referenceWidth, image.Height / (float)referenceHeight);
         }
 
+        private static (float offsetX, float offsetY) CalculateOffsets(TemplateConfiguration config, float scaleX, float scaleY)
+        {
+            var offsetX = config.OriginOffset?.X ?? 0;
+            var offsetY = config.OriginOffset?.Y ?? 0;
+
+            return (offsetX * scaleX, offsetY * scaleY);
+        }
+
         private static float CalculateScaledBubbleRadius(float scaleX, float scaleY)
         {
             var constrainedScale = Math.Min(scaleX, scaleY);
             return Math.Max(MinimumBubbleRadius, BubbleRadius * constrainedScale);
         }
 
-        private static void DrawDebugOverlay(Image image, TemplateConfiguration config, float scaleX, float scaleY, float bubbleRadius)
+        private static void DrawDebugOverlay(Image image, TemplateConfiguration config, float scaleX, float scaleY, float bubbleRadius, (float offsetX, float offsetY) offsets)
         {
             var markerRadius = Math.Max(2f, bubbleRadius * 0.35f);
             var fontSize = Math.Max(8f, markerRadius * 2);
@@ -374,8 +383,8 @@ namespace OMRAutoFillApp.Services
 
                         foreach (var position in column.Positions)
                         {
-                            var x = position.X * scaleX;
-                            var y = position.Y * scaleY;
+                            var x = position.X * scaleX + offsets.offsetX;
+                            var y = position.Y * scaleY + offsets.offsetY;
                             DrawDebugMarker(ctx, x, y, markerRadius, font, $"R{colIndex + 1}:{position.Digit}");
                         }
                     }
@@ -390,8 +399,8 @@ namespace OMRAutoFillApp.Services
 
                         foreach (var position in column.Positions)
                         {
-                            var x = position.X * scaleX;
-                            var y = position.Y * scaleY;
+                            var x = position.X * scaleX + offsets.offsetX;
+                            var y = position.Y * scaleY + offsets.offsetY;
                             DrawDebugMarker(ctx, x, y, markerRadius, font, $"G{colIndex + 1}:{position.Digit}");
                         }
                     }
@@ -405,8 +414,8 @@ namespace OMRAutoFillApp.Services
 
                         foreach (var option in question.OptionPositions)
                         {
-                            var x = option.X * scaleX;
-                            var y = option.Y * scaleY;
+                            var x = option.X * scaleX + offsets.offsetX;
+                            var y = option.Y * scaleY + offsets.offsetY;
                             DrawDebugMarker(ctx, x, y, markerRadius, font, $"{question.Number}{option.Option}");
                         }
                     }
