@@ -2,6 +2,10 @@
   "templateId": "MCQ_SAMPLE_01",
   "templateType": "MCQ",
   "dpi": 300,
+  "referenceSize": {
+    "width": 2480,
+    "height": 3508
+  },
   "roll": {
     "digits": 6,
     "columns": [

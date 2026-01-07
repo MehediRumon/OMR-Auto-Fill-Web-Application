@@ -44,6 +44,13 @@
                             <div class="form-text">Upload the XML configuration file with bubble coordinates</div>
                         </div>
 
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="DebugOverlay" class="form-check-input" type="checkbox" />
+                            <label asp-for="DebugOverlay" class="form-check-label fw-bold">
+                                <i class="bi bi-bullseye"></i> Enable debug overlay (draws red dots and labels at all coordinates)
+                            </label>
+                        </div>
+
                         <!-- Roll Number -->
                         <div class="mb-3">
                             <label asp-for="RollNumber" class="form-label fw-bold">
@@ -104,6 +111,7 @@
   &lt;TemplateId&gt;YOUR_TEMPLATE_ID&lt;/TemplateId&gt;
   &lt;TemplateType&gt;MCQ&lt;/TemplateType&gt;
   &lt;Dpi&gt;300&lt;/Dpi&gt;
+  &lt;ReferenceSize width="2480" height="3508" /&gt;
   &lt;Roll&gt;
     &lt;Digits&gt;6&lt;/Digits&gt;
     &lt;Columns&gt;

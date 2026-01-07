@@ -21,5 +21,7 @@ namespace OMRAutoFillApp.Models.ViewModels
 
         // For MCQ templates only - comma-separated answers (e.g., "A,B,C,D,A,...")
         public string? McqAnswers { get; set; }
+
+        public bool DebugOverlay { get; set; }
     }
 }

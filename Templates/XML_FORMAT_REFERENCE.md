@@ -31,6 +31,7 @@ Must be `<TemplateConfiguration>` (case-sensitive)
   <TemplateId>YOUR_TEMPLATE_ID</TemplateId>
   <TemplateType>MCQ</TemplateType>
   <Dpi>300</Dpi>
+  <ReferenceSize width="2480" height="3508" />
   <Roll>
     <Digits>6</Digits>
     <Columns>
@@ -88,6 +89,7 @@ Must be `<TemplateConfiguration>` (case-sensitive)
   <TemplateId>YOUR_TEMPLATE_ID</TemplateId>
   <TemplateType>SAQ</TemplateType>
   <Dpi>300</Dpi>
+  <ReferenceSize width="2480" height="3508" />
   <Roll>
     <Digits>6</Digits>
     <Columns>
@@ -124,6 +126,7 @@ Must be `<TemplateConfiguration>` (case-sensitive)
 - `<TemplateId>`: Unique identifier for the template (required)
 - `<TemplateType>`: Either "MCQ" or "SAQ" (required)
 - `<Dpi>`: DPI of the template image, default 300 (optional)
+- `<ReferenceSize>`: Reference pixel dimensions of the template image. Attributes: `width`, `height`. Required for reliable scaling across uploads.
 
 ### Roll Number Configuration
 - `<Roll>`: Roll number bubble configuration (required)

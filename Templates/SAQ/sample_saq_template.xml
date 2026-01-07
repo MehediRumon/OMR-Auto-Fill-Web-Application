@@ -3,6 +3,7 @@
   <TemplateId>SAQ_SAMPLE_01</TemplateId>
   <TemplateType>SAQ</TemplateType>
   <Dpi>300</Dpi>
+  <ReferenceSize width="2480" height="3508" />
   <Roll>
     <Digits>6</Digits>
     <Columns>
