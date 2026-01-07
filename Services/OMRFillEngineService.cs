@@ -24,6 +24,8 @@ namespace OMRAutoFillApp.Services
         private const float BubbleRadius = 15; // Base bubble radius to ensure full coverage of printed circles
         private const int StreamReaderBufferSize = 1024;
         private const int MinimumXmlContentLength = 50; // Minimum characters for a valid XML document
+        private const int MinimumReferenceSize = 1;
+        private const float MinimumBubbleRadius = 1f;
 
         public byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null, bool debugOverlay = false)
         {
@@ -310,7 +312,7 @@ namespace OMRAutoFillApp.Services
             var referenceWidth = config.ReferenceSize?.Width > 0 ? config.ReferenceSize.Width : image.Width;
             var referenceHeight = config.ReferenceSize?.Height > 0 ? config.ReferenceSize.Height : image.Height;
 
-            if (referenceWidth == 0 || referenceHeight == 0)
+            if (referenceWidth < MinimumReferenceSize || referenceHeight < MinimumReferenceSize)
             {
                 return (1f, 1f);
             }
@@ -321,16 +323,26 @@ namespace OMRAutoFillApp.Services
         private static float CalculateScaledBubbleRadius(float scaleX, float scaleY)
         {
             var constrainedScale = Math.Min(scaleX, scaleY);
-            return Math.Max(1f, BubbleRadius * constrainedScale);
+            return Math.Max(MinimumBubbleRadius, BubbleRadius * constrainedScale);
         }
 
         private static void DrawDebugOverlay(Image image, TemplateConfiguration config, float scaleX, float scaleY, float bubbleRadius)
         {
             var markerRadius = Math.Max(2f, bubbleRadius * 0.35f);
             var fontSize = Math.Max(8f, markerRadius * 2);
-            var font = SystemFonts.Families.Any()
-                ? SystemFonts.CreateFont(SystemFonts.Families.First().Name, fontSize)
-                : null;
+            Font? font = null;
+
+            if (SystemFonts.Families.Any())
+            {
+                try
+                {
+                    font = SystemFonts.CreateFont(SystemFonts.Families.First().Name, fontSize);
+                }
+                catch
+                {
+                    font = null;
+                }
+            }
 
             image.Mutate(ctx =>
             {
