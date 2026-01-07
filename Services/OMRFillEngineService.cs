@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -338,9 +339,9 @@ namespace OMRAutoFillApp.Services
                 {
                     font = SystemFonts.CreateFont(SystemFonts.Families.First().Name, fontSize);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    font = null;
+                    Debug.WriteLine($"Debug overlay font fallback failed: {ex.Message}");
                 }
             }
 
