@@ -335,20 +335,22 @@ namespace OMRAutoFillApp.Services
 
             var fontFamilies = SystemFonts.Families.ToList();
             var preferredFonts = new[] { "Arial", "Helvetica", "DejaVu Sans", "Liberation Sans" };
-            var selectedFamily = preferredFonts
+            string? selectedFamilyName = preferredFonts
                 .Select(name => fontFamilies.FirstOrDefault(f => f.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
-                .FirstOrDefault(f => !string.IsNullOrWhiteSpace(f.Name));
+                .Where(f => !string.IsNullOrWhiteSpace(f.Name))
+                .Select(f => f.Name)
+                .FirstOrDefault();
 
-            if (string.IsNullOrWhiteSpace(selectedFamily.Name))
+            if (string.IsNullOrWhiteSpace(selectedFamilyName))
             {
-                selectedFamily = fontFamilies.FirstOrDefault(f => !string.IsNullOrWhiteSpace(f.Name));
+                selectedFamilyName = fontFamilies.FirstOrDefault(f => !string.IsNullOrWhiteSpace(f.Name)).Name;
             }
 
-            if (!string.IsNullOrWhiteSpace(selectedFamily.Name))
+            if (!string.IsNullOrWhiteSpace(selectedFamilyName))
             {
                 try
                 {
-                    font = SystemFonts.CreateFont(selectedFamily.Name, fontSize);
+                    font = SystemFonts.CreateFont(selectedFamilyName, fontSize);
                 }
                 catch (InvalidOperationException ex)
                 {
