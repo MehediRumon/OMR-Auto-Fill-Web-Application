@@ -16,6 +16,12 @@ namespace OMRAutoFillApp.Models
         
         [XmlElement("Dpi")]
         public int Dpi { get; set; } = 300;
+
+        [XmlElement("ReferenceSize")]
+        public ReferenceSize ReferenceSize { get; set; } = new ReferenceSize();
+
+        [XmlElement("OriginOffset")]
+        public OriginOffset OriginOffset { get; set; } = new OriginOffset();
         
         [XmlElement("Roll")]
         public RollConfiguration? Roll { get; set; }
@@ -112,6 +118,24 @@ namespace OMRAutoFillApp.Models
         [XmlAttribute("x")]
         public int X { get; set; }
         
+        [XmlAttribute("y")]
+        public int Y { get; set; }
+    }
+
+    public class ReferenceSize
+    {
+        [XmlAttribute("width")]
+        public int Width { get; set; }
+
+        [XmlAttribute("height")]
+        public int Height { get; set; }
+    }
+
+    public class OriginOffset
+    {
+        [XmlAttribute("x")]
+        public int X { get; set; }
+
         [XmlAttribute("y")]
         public int Y { get; set; }
     }

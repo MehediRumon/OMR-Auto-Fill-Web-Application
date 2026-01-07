@@ -42,7 +42,12 @@ namespace OMRAutoFillApp.Services
             {
                 TemplateId = GenerateTemplateId(legacyConfig),
                 TemplateType = DetermineTemplateType(legacyConfig),
-                Dpi = DefaultDpi
+                Dpi = DefaultDpi,
+                ReferenceSize = new ReferenceSize
+                {
+                    Width = actualImageWidth,
+                    Height = actualImageHeight
+                }
             };
             
             // Convert roll and registration configurations from the first OMR section

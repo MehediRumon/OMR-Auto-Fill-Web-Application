@@ -62,7 +62,8 @@ namespace OMRAutoFillApp.Controllers
                     configStream,
                     model.RollNumber,
                     model.RegistrationNumber,
-                    mcqAnswers
+                    mcqAnswers,
+                    model.DebugOverlay
                 );
 
                 // Return the filled OMR as a downloadable file

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 using OMRAutoFillApp.Models;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -15,19 +17,22 @@ namespace OMRAutoFillApp.Services
 {
     public interface IOMRFillEngineService
     {
-        byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null);
+        byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null, bool debugOverlay = false);
     }
 
     public class OMRFillEngineService : IOMRFillEngineService
     {
-        private const int BubbleRadius = 15; // Larger bubble radius to ensure full coverage of printed circles
+        private const float BubbleRadius = 15; // Base bubble radius (pixels) sized for 300 DPI templates before reference-size scaling
         private const int StreamReaderBufferSize = 1024;
         private const int MinimumXmlContentLength = 50; // Minimum characters for a valid XML document
+        private const int MinimumReferenceSize = 1;
+        private const float MinimumBubbleRadius = 1f;
 
-        public byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null)
+        public byte[] FillOMR(Stream templateImageStream, Stream configurationStream, string rollNumber, string registrationNumber, string[]? mcqAnswers = null, bool debugOverlay = false)
         {
             // Load the uploaded template image first (we need dimensions for legacy format)
             using var image = Image.Load(templateImageStream);
+            NormalizeImage(image);
             
             // Load configuration from uploaded XML, passing image dimensions
             var config = LoadConfiguration(configurationStream, image.Width, image.Height);
@@ -35,16 +40,25 @@ namespace OMRAutoFillApp.Services
             // Validate inputs
             ValidateInputs(config, rollNumber, registrationNumber, mcqAnswers);
 
+            var (scaleX, scaleY) = CalculateScaleFactors(image, config);
+            var scaledBubbleRadius = CalculateScaledBubbleRadius(scaleX, scaleY);
+            var offsets = CalculateOffsets(config, scaleX, scaleY);
+
             // Fill roll number
-            FillRollNumber(image, config, rollNumber);
+            FillRollNumber(image, config, rollNumber, scaleX, scaleY, scaledBubbleRadius, offsets);
 
             // Fill registration number
-            FillRegistrationNumber(image, config, registrationNumber);
+            FillRegistrationNumber(image, config, registrationNumber, scaleX, scaleY, scaledBubbleRadius, offsets);
 
             // Fill MCQ answers (only for MCQ templates)
             if (config.TemplateType.Equals("MCQ", StringComparison.OrdinalIgnoreCase) && mcqAnswers != null)
             {
-                FillMCQAnswers(image, config, mcqAnswers);
+                FillMCQAnswers(image, config, mcqAnswers, scaleX, scaleY, scaledBubbleRadius, offsets);
+            }
+
+            if (debugOverlay)
+            {
+                DrawDebugOverlay(image, config, scaleX, scaleY, scaledBubbleRadius, offsets);
             }
 
             // Convert to byte array
@@ -215,7 +229,7 @@ namespace OMRAutoFillApp.Services
             }
         }
 
-        private void FillRollNumber(Image image, TemplateConfiguration config, string rollNumber)
+        private void FillRollNumber(Image image, TemplateConfiguration config, string rollNumber, float scaleX, float scaleY, float bubbleRadius, (float offsetX, float offsetY) offsets)
         {
             if (config.Roll == null || config.Roll.Columns == null) return;
 
@@ -229,13 +243,13 @@ namespace OMRAutoFillApp.Services
                     var position = column.Positions.FirstOrDefault(p => p.Digit == digit);
                     if (position != null)
                     {
-                        DrawBubble(image, position.X, position.Y);
+                        DrawBubble(image, position.X, position.Y, scaleX, scaleY, bubbleRadius, offsets);
                     }
                 }
             }
         }
 
-        private void FillRegistrationNumber(Image image, TemplateConfiguration config, string registrationNumber)
+        private void FillRegistrationNumber(Image image, TemplateConfiguration config, string registrationNumber, float scaleX, float scaleY, float bubbleRadius, (float offsetX, float offsetY) offsets)
         {
             if (config.Reg == null || config.Reg.Columns == null) return;
 
@@ -249,13 +263,13 @@ namespace OMRAutoFillApp.Services
                     var position = column.Positions.FirstOrDefault(p => p.Digit == digit);
                     if (position != null)
                     {
-                        DrawBubble(image, position.X, position.Y);
+                        DrawBubble(image, position.X, position.Y, scaleX, scaleY, bubbleRadius, offsets);
                     }
                 }
             }
         }
 
-        private void FillMCQAnswers(Image image, TemplateConfiguration config, string[] mcqAnswers)
+        private void FillMCQAnswers(Image image, TemplateConfiguration config, string[] mcqAnswers, float scaleX, float scaleY, float bubbleRadius, (float offsetX, float offsetY) offsets)
         {
             if (config.Mcq == null || config.Mcq.Coordinates == null) return;
 
@@ -270,18 +284,153 @@ namespace OMRAutoFillApp.Services
                     var optionPos = question.OptionPositions.FirstOrDefault(o => o.Option == answer);
                     if (optionPos != null)
                     {
-                        DrawBubble(image, optionPos.X, optionPos.Y);
+                        DrawBubble(image, optionPos.X, optionPos.Y, scaleX, scaleY, bubbleRadius, offsets);
                     }
                 }
             }
         }
 
-        private void DrawBubble(Image image, int x, int y)
+        private void DrawBubble(Image image, int originalX, int originalY, float scaleX, float scaleY, float bubbleRadius, (float offsetX, float offsetY) offsets)
+        {
+            var scaledX = originalX * scaleX + offsets.offsetX;
+            var scaledY = originalY * scaleY + offsets.offsetY;
+
+            image.Mutate(ctx =>
+            {
+                ctx.Fill(Color.Black, new EllipsePolygon(scaledX, scaledY, bubbleRadius));
+            });
+        }
+
+        private static void NormalizeImage(Image image)
         {
             image.Mutate(ctx =>
             {
-                ctx.Fill(Color.Black, new EllipsePolygon(x, y, BubbleRadius));
+                ctx.AutoOrient();
             });
+        }
+
+        private static (float scaleX, float scaleY) CalculateScaleFactors(Image image, TemplateConfiguration config)
+        {
+            var referenceWidth = config.ReferenceSize?.Width > 0 ? config.ReferenceSize.Width : image.Width;
+            var referenceHeight = config.ReferenceSize?.Height > 0 ? config.ReferenceSize.Height : image.Height;
+
+            if (referenceWidth < MinimumReferenceSize || referenceHeight < MinimumReferenceSize)
+            {
+                return (1f, 1f);
+            }
+
+            return (image.Width / (float)referenceWidth, image.Height / (float)referenceHeight);
+        }
+
+        private static (float offsetX, float offsetY) CalculateOffsets(TemplateConfiguration config, float scaleX, float scaleY)
+        {
+            var offsetX = config.OriginOffset?.X ?? 0;
+            var offsetY = config.OriginOffset?.Y ?? 0;
+
+            return (offsetX * scaleX, offsetY * scaleY);
+        }
+
+        private static float CalculateScaledBubbleRadius(float scaleX, float scaleY)
+        {
+            var constrainedScale = Math.Min(scaleX, scaleY);
+            return Math.Max(MinimumBubbleRadius, BubbleRadius * constrainedScale);
+        }
+
+        private static void DrawDebugOverlay(Image image, TemplateConfiguration config, float scaleX, float scaleY, float bubbleRadius, (float offsetX, float offsetY) offsets)
+        {
+            var markerRadius = Math.Max(2f, bubbleRadius * 0.35f);
+            var fontSize = Math.Max(8f, markerRadius * 2);
+            Font? font = null;
+
+            var fontFamilies = SystemFonts.Families.ToList();
+            var preferredFonts = new[] { "Arial", "Helvetica", "DejaVu Sans", "Liberation Sans" };
+            string? selectedFamilyName = preferredFonts.FirstOrDefault(name =>
+                fontFamilies.Any(f => f.Name.Equals(name, StringComparison.OrdinalIgnoreCase)));
+
+            if (string.IsNullOrWhiteSpace(selectedFamilyName) && fontFamilies.Count > 0)
+            {
+                var fallbackFamily = fontFamilies.FirstOrDefault(f => !string.IsNullOrWhiteSpace(f.Name));
+                if (!string.IsNullOrWhiteSpace(fallbackFamily.Name))
+                {
+                    selectedFamilyName = fallbackFamily.Name;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(selectedFamilyName))
+            {
+                try
+                {
+                    font = SystemFonts.CreateFont(selectedFamilyName, fontSize);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Debug.WriteLine($"Debug overlay font creation failed: {ex.Message}");
+                }
+                catch (ArgumentException ex)
+                {
+                    Debug.WriteLine($"Debug overlay font creation failed: {ex.Message}");
+                }
+            }
+
+            image.Mutate(ctx =>
+            {
+                if (config.Roll?.Columns != null)
+                {
+                    for (int colIndex = 0; colIndex < config.Roll.Columns.Count; colIndex++)
+                    {
+                        var column = config.Roll.Columns[colIndex];
+                        if (column.Positions == null) continue;
+
+                        foreach (var position in column.Positions)
+                        {
+                            var x = position.X * scaleX + offsets.offsetX;
+                            var y = position.Y * scaleY + offsets.offsetY;
+                            DrawDebugMarker(ctx, x, y, markerRadius, font, $"R{colIndex + 1}:{position.Digit}");
+                        }
+                    }
+                }
+
+                if (config.Reg?.Columns != null)
+                {
+                    for (int colIndex = 0; colIndex < config.Reg.Columns.Count; colIndex++)
+                    {
+                        var column = config.Reg.Columns[colIndex];
+                        if (column.Positions == null) continue;
+
+                        foreach (var position in column.Positions)
+                        {
+                            var x = position.X * scaleX + offsets.offsetX;
+                            var y = position.Y * scaleY + offsets.offsetY;
+                            DrawDebugMarker(ctx, x, y, markerRadius, font, $"G{colIndex + 1}:{position.Digit}");
+                        }
+                    }
+                }
+
+                if (config.Mcq?.Coordinates != null)
+                {
+                    foreach (var question in config.Mcq.Coordinates)
+                    {
+                        if (question.OptionPositions == null) continue;
+
+                        foreach (var option in question.OptionPositions)
+                        {
+                            var x = option.X * scaleX + offsets.offsetX;
+                            var y = option.Y * scaleY + offsets.offsetY;
+                            DrawDebugMarker(ctx, x, y, markerRadius, font, $"{question.Number}{option.Option}");
+                        }
+                    }
+                }
+            });
+        }
+
+        private static void DrawDebugMarker(IImageProcessingContext ctx, float x, float y, float markerRadius, Font? font, string label)
+        {
+            ctx.Fill(Color.Red, new EllipsePolygon(x, y, markerRadius));
+
+            if (font != null)
+            {
+                ctx.DrawText(label, font, Color.Red, new PointF(x + markerRadius + 1, y - markerRadius));
+            }
         }
     }
 }
