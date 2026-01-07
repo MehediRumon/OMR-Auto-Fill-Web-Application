@@ -22,7 +22,7 @@ namespace OMRAutoFillApp.Services
 
     public class OMRFillEngineService : IOMRFillEngineService
     {
-        private const float BubbleRadius = 15; // Base bubble radius (pixels) sized for 300 DPI templates before scaling
+        private const float BubbleRadius = 15; // Base bubble radius (pixels) sized for 300 DPI templates before reference-size scaling
         private const int StreamReaderBufferSize = 1024;
         private const int MinimumXmlContentLength = 50; // Minimum characters for a valid XML document
         private const int MinimumReferenceSize = 1;
@@ -338,10 +338,13 @@ namespace OMRAutoFillApp.Services
             string? selectedFamilyName = preferredFonts.FirstOrDefault(name =>
                 fontFamilies.Any(f => f.Name.Equals(name, StringComparison.OrdinalIgnoreCase)));
 
-            if (string.IsNullOrWhiteSpace(selectedFamilyName))
+            if (string.IsNullOrWhiteSpace(selectedFamilyName) && fontFamilies.Count > 0)
             {
                 var fallbackFamily = fontFamilies.FirstOrDefault(f => !string.IsNullOrWhiteSpace(f.Name));
-                selectedFamilyName = !string.IsNullOrWhiteSpace(fallbackFamily.Name) ? fallbackFamily.Name : null;
+                if (!string.IsNullOrWhiteSpace(fallbackFamily.Name))
+                {
+                    selectedFamilyName = fallbackFamily.Name;
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(selectedFamilyName))
